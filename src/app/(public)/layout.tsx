@@ -1,4 +1,5 @@
 import "@/app/globals.css";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -29,9 +30,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div>sjdfkjsdkf</div>
-        {children}
-        {modal}
+        <ThemeProvider defaultTheme="dark">
+          <div>sjdfkjsdkf</div>
+          {children}
+          {modal}
+        </ThemeProvider>
       </body>
     </html>
   );
