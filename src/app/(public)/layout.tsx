@@ -1,4 +1,5 @@
 import "@/app/globals.css";
+import MainHeader from "@/components/Header/main-header";
 import TopHeader from "@/components/Header/top-header";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { Metadata } from "next";
@@ -33,6 +34,7 @@ export default function RootLayout({
       >
         <ThemeProvider defaultTheme="dark">
           <TopHeader />
+          <MainHeader />
           {children}
           {modal}
         </ThemeProvider>
