@@ -32,7 +32,7 @@ export const buttonVariants = {
       "bg-primary text-primary-foreground border border-input-border hover:bg-accent hover:border-primary hover:text-primary hover:bg-primary/20 text-sm font-medium",
     glow: "bg-primary text-white shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_35px_rgba(79,70,229,0.6)] hover:-translate-y-1",
     outline:
-      "border-border bg-background hover:bg-muted hover:text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 aria-expanded:bg-muted aria-expanded:text-foreground",
+      "border-border border-2 bg-accent/60 hover:bg-accent/90 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
     overlay:
       "flex items-center bg-muted shadow-md hover:bg-primary/30 hover:ring ring-primary shadow-primary-foreground gap-1.5 cursor-pointer whitespace-nowrap px-3 py-1 text-xs font-medium text-muted-foreground rounded-full transition-all duration-300",
     glass:
@@ -42,7 +42,7 @@ export const buttonVariants = {
     link: "bg-transparent border-none text-primary hover:underline",
     gradient:
       "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white hover:hue-rotate-15 shadow-lg",
-    soft: "bg-muted border border-2 text-foreground custom-shadow hover:shadow-inner",
+    soft: "bg-accent border border-2 text-foreground custom-shadow hover:bg-secondary/70",
     success:
       "bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/30",
     danger:
@@ -66,6 +66,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   image?: { src: string; alt: string } | null;
   fullWidth?: boolean;
   successMessage?: string;
+  iconClassName?: string;
   badge?: string | number | null;
   badgeClassName?: string;
   action?: () => Promise<{ error: boolean; message?: string }>;
@@ -84,6 +85,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       fullWidth,
       icon: Icon,
       image,
+      iconClassName,
       successMessage,
       children,
       disabled,
@@ -150,11 +152,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             <Loader2Icon size={18} className="animate-spin" />
           ) : (
             <>
-              {/* {icon && (
-                <span className="transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12 flex items-center justify-center">
-                  {icon}
-                </span>
-              )} */}
               {typeof Icon === "function" ? (
                 <Icon
                   className={`h-5 w-5 ${iconClassName}`}
@@ -191,11 +188,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <>
-        <style
+        {/* <style
           dangerouslySetInnerHTML={{
             __html: `@keyframes shimmer { 100% { transform: translateX(190%); } }`,
           }}
-        />
+        /> */}
 
         {requireAreYouSure ? (
           <AlertDialog>

@@ -1,0 +1,14 @@
+import AuthForm from "@/components/common/auth-form";
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function SignUnPage() {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <Card>
+        <CardContent className="max-w-5xl">
+          <AuthForm />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

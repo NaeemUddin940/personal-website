@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dropdown";
 import Image from "next/image";
 import { Badge } from "../common/badge";
-import { Button } from "../ui/button";
 import SearchBox from "../common/search-box";
+import { Button } from "../ui/button";
 import Separator from "../ui/separator";
 import { ThemeToggle } from "../ui/theme-toggle";
 import HeaderLogo from "./header-logo";
@@ -105,13 +105,13 @@ export default function MainHeader() {
               </Dropdown>
             ) : (
               <div className="flex items-center justify-between space-x-3">
-                <Link href="/auth/login">
+                <Link href="/auth/sign-in">
                   <Button size="sm" variant="overlay">
                     Login
                   </Button>
                 </Link>
                 <Separator orientation="vertical" className="py-3" />
-                <Link href="/auth/register">
+                <Link href="/auth/sign-up">
                   <Button size="sm" variant="overlay">
                     Register
                   </Button>

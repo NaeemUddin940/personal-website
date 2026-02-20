@@ -189,3 +189,10 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+.custom-shadow {
+  /* The custom shadow for dark mode (tailwind utility classes) */
+  @apply dark:shadow-[6px_6px_12px_#313c4a,-6px_-6px_12px_#1e252e];
+  /* The custom shadow for light mode (tailwind utility classes) */
+  @apply shadow-[6px_6px_12px_#c5c5c5,-6px_-6px_12px_#ffffff];
+}
