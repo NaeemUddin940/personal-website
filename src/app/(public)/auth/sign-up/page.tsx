@@ -1,9 +1,9 @@
 import AuthForm from "@/components/common/auth-form";
 import { Card, CardContent } from "@/components/ui/card";
 
-export default function SignUnPage() {
+export default function SignUpPage() {
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex flex-1 items-center justify-center min-h-[calc(100vh-120px)]">
       <Card>
         <CardContent className="max-w-5xl">
           <AuthForm />

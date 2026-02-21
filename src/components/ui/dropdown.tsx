@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 import React, {
   createContext,
   FC,
@@ -286,6 +287,7 @@ interface DropdownItemProps {
   children?: ReactNode;
   icon?: ReactNode;
   title?: string;
+  link?: string;
   label?: string;
   className?: string;
   onClick?: () => void;
@@ -297,6 +299,7 @@ const DropdownItem: FC<DropdownItemProps> = ({
   icon,
   title,
   label,
+  link,
   className = "",
   onClick,
 }) => {
@@ -313,35 +316,37 @@ const DropdownItem: FC<DropdownItemProps> = ({
   };
 
   return (
-    <motion.div
-      variants={itemAnims}
-      onClick={handleItemClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 group hover:bg-muted text-muted-foreground hover:text-primary ${className}`}
-    >
-      {children ? (
-        children
-      ) : (
-        <>
-          {icon && (
-            <div className="text-current opacity-70 group-hover:opacity-100">
-              {icon}
+    <Link href={link}>
+      <motion.div
+        variants={itemAnims}
+        onClick={handleItemClick}
+        className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 group hover:bg-muted text-muted-foreground hover:text-primary ${className}`}
+      >
+        {children ? (
+          children
+        ) : (
+          <>
+            {icon && (
+              <div className="text-current opacity-70 group-hover:opacity-100">
+                {icon}
+              </div>
+            )}
+            <div className="flex flex-col">
+              {title && (
+                <span className="text-sm font-semibold leading-tight">
+                  {title}
+                </span>
+              )}
+              {label && (
+                <span className="text-[10px] opacity-50 font-medium mt-0.5">
+                  {label}
+                </span>
+              )}
             </div>
-          )}
-          <div className="flex flex-col">
-            {title && (
-              <span className="text-sm font-semibold leading-tight">
-                {title}
-              </span>
-            )}
-            {label && (
-              <span className="text-[10px] opacity-50 font-medium mt-0.5">
-                {label}
-              </span>
-            )}
-          </div>
-        </>
-      )}
-    </motion.div>
+          </>
+        )}
+      </motion.div>
+    </Link>
   );
 };
 

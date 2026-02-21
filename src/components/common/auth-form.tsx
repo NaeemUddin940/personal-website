@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { usePathname } from "next/navigation";
 import { useActionState } from "react";
-import SocialButtons from "../social-buttons";
+import SocialButtons from "./social-buttons";
 import { Card, CardContent } from "../ui/card";
 import { DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import Input from "./input";
@@ -39,13 +39,13 @@ export default function AuthForm() {
       {/* <Card>
         <CardContent className="p-0"> */}
       <div className="flex-1 w-full flex flex-col justify-center">
-        <Card>
+        <Card className="bg-secondary/50">
           <CardContent>
-            <DialogHeader className="items-center my-5 text-center">
-              <DialogTitle>
+            <DialogHeader className="items-center text-center">
+              <DialogTitle className="text-3xl font-bold mb-2">
                 {isRegister ? "Create Account" : "Welcome Back"}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="mb-3">
                 {isRegister
                   ? "Enter your details below to create your account"
                   : "Enter your credentials to access your account"}

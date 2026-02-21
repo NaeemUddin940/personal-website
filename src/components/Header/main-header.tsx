@@ -41,11 +41,17 @@ export default function MainHeader() {
     },
   ];
   // const [searchResult, setSearchResult] = useState("");
-  const session = null; // Replace with actual session logic (e.g., from authClient.useSession())
+  const session = {
+    user: {
+      name: "John Doe",
+      email: "john@example.com",
+      image: "/images/user.jpg",
+    },
+  }; // Replace with actual session logic (e.g., from authClient.useSession())
   // const { data: session } = authClient.useSession();
   return (
     <header className="border-b bg-card border-border">
-      <div className="flex items-center justify-between container mx-auto px-4 py-2">
+      <div className="flex items-center justify-between container mx-auto px-4 h-19">
         <HeaderLogo />
 
         <div className="lg:block flex-1 hidden max-w-2xl lg:max-xl mx-4 md:mx-8">
@@ -77,10 +83,10 @@ export default function MainHeader() {
                     <p className="text-sm">{session.user.email}</p>
                   </div>
                 </DropdownTrigger>
-                <DropdownContent className="w-50">
+                <DropdownContent className="w-30">
                   <DropdownItem
                     title="My Profile"
-                    link="/my-details"
+                    link="/user/details"
                     icon={<User />}
                   />
                   <DropdownItem
@@ -98,9 +104,9 @@ export default function MainHeader() {
                     link="/my-cart-lists"
                     icon={<ShoppingCart />}
                   />
-                  <DropdownItem>
-                    {/* <LogoutButton size="sm" fullWidth className="text-black" /> */}
-                  </DropdownItem>
+                  {/* <DropdownItem>
+                    <LogoutButton size="sm" fullWidth className="text-black" />
+                  </DropdownItem> */}
                 </DropdownContent>
               </Dropdown>
             ) : (

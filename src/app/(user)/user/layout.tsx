@@ -1,5 +1,7 @@
 "use client";
 import "@/app/globals.css";
+import Header from "@/components/Header/header";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 export default function UserLayout({
   children,
@@ -7,8 +9,9 @@ export default function UserLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <main>{children}</main>
-    </>
+    <ThemeProvider defaultTheme="dark">
+      <Header />
+      <div className="flex-1 mt-30">{children}</div>
+    </ThemeProvider>
   );
 }

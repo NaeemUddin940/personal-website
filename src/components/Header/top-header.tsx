@@ -15,7 +15,7 @@ import TypewriterTitle from "../ui/type-writer";
 export default function TopHeader() {
   return (
     <section className="w-full bg-muted border-b border-border">
-      <div className="container mx-auto flex items-center justify-between py-1 px-3 sm:px-5">
+      <div className="container mx-auto flex items-center justify-between h-12 sm:px-5">
         {/* Left Side */}
         <div className="flex items-center justify-center sm:justify-start gap-4 offer w-full">
           <div className="flex gap-4 text-[11px] sm:text-xs font-medium tracking-tight whitespace-nowrap">

@@ -24,17 +24,19 @@ type IconType =
   | ReactNode;
 
 export const buttonVariants = {
-  base: "relative inline-flex items-center justify-center cursor-pointer rounded-xl font-bold transition-all duration-200 overflow-hidden focus:outline-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group min-w-0",
+  base: "relative inline-flex whitespace-nowrap items-center justify-center cursor-pointer rounded-md font-bold transition-all duration-200 overflow-hidden focus:outline-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group min-w-0 w-full md:w-auto",
   variants: {
     default:
-      "border border-input-border shadow-sm text-sm text-foregorund font-medium",
+      "border border-input-border shadow-sm text-sm text-foreground font-medium",
+    simple:
+      "flex cursor-pointer items-center gap-1.5 text-[11px] font-bold  hover:text-primary text-primary/90 transition-colors uppercase tracking-tight",
     primary:
-      "bg-primary text-primary-foreground border border-input-border hover:bg-accent hover:border-primary hover:text-primary hover:bg-primary/20 text-sm font-medium",
+      "bg-primary text-primary-foreground border border-border hover:border-primary hover:text-primary-foreground hover:bg-primary/80 text-sm font-medium",
     glow: "bg-primary text-white shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_35px_rgba(79,70,229,0.6)] hover:-translate-y-1",
     outline:
-      "border-border border-2 bg-accent/60 hover:bg-accent/90 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+      "border-border border-2 bg-accent hover:bg-secondary/20 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
     overlay:
-      "flex items-center bg-muted shadow-md hover:bg-primary/30 hover:ring ring-primary shadow-primary-foreground gap-1.5 cursor-pointer whitespace-nowrap px-3 py-1 text-xs font-medium text-muted-foreground rounded-full transition-all duration-300",
+      "flex items-center bg-muted shadow-md hover:bg-primary/30 hover:ring ring-primary shadow-primary-foreground gap-1.5 cursor-pointer whitespace-nowrap px-3 py-1 text-xs font-medium text-muted-foreground transition-all duration-300",
     glass:
       "bg-white/10 backdrop-blur-md border border-white/20 text-foreground hover:bg-white/20 hover:border-white/40 shadow-xl",
     slide:
@@ -46,15 +48,15 @@ export const buttonVariants = {
     success:
       "bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/30",
     danger:
-      "bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/30",
+      "bg-rose-500/40 border border-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/30",
     cancel:
       "hover:bg-rose-100 dark:hover:bg-rose-500 rounded-full transition text-rose-600",
   },
   sizes: {
     default: "px-3 py-2 text-md",
-    sm: "px-2 py-1.5 text-xs sm:px-2 rounded-full",
+    sm: "px-2 py-1.5 text-xs sm:px-2",
     md: "px-4 py-3 text-sm sm:px-6",
-    lg: "px-10 py-4 text-lg",
+    lg: "px-8 py-4 text-lg",
   },
 };
 
@@ -205,11 +207,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="px-3 py-2 border-none bg-rose-100 text-rose-600 hover:bg-rose-200">
-                  Cancel
-                </AlertDialogCancel>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
-                  className="bg-primary px-3 py-2 text-white hover:opacity-90 transition-opacity"
                   onClick={() => performAction()}
                   disabled={isLoading}
                 >
