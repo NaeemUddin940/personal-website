@@ -1,0 +1,684 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+// Product Types
+enum ProductType {
+  SIMPLE
+  VARIABLE
+  COMBO
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  PENDING_REVIEW
+  ARCHIVED
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+enum ProductVisibility {
+  VISIBLE
+  HIDDEN
+  SEARCH_ONLY
+  CATALOG_ONLY
+}
+
+
+
+enum AttributeType {
+  TEXT
+  NUMBER
+  BOOLEAN
+  SELECT
+  MULTISELECT
+  COLOR
+  IMAGE
+  FILE
+  DATE
+}
+
+enum SwatchType {
+  COLOR
+  IMAGE
+  TEXT
+}
+
+
+enum WeightUnit {
+  KG
+  G
+  LB
+  OZ
+}
+
+enum DimensionUnit {
+  CM
+  M
+  IN
+  FT
+}
+
+
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+enum QuestionStatus {
+  PENDING
+  ANSWERED
+  CLOSED
+  SPAM
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+
+
+// Core Product Models
+model Product {
+  id              String          @id @default(cuid())
+  sku             String          @unique
+  title           String
+  slug            String          @unique
+  description     String?
+  shortDesc       String?         @map("short_description")
+  productType     ProductType     @map("product_type")
+  status          ProductStatus
+  visibility      ProductVisibility
+  categories      CategoryOnProduct[]
+  tags            TagOnProduct[]
+  attributes      ProductAttribute[]
+  variations      Variation[]      // For variable products
+  comboItems      ComboItem[]      // For combo products
+  images          ProductImage[]
+  seo             Seo?
+  inventory       Inventory?
+  pricing         Pricing?
+  shipping        Shipping?
+  tax             Tax?
+  reviews         Review[]
+  questions       Question[]
+  metaData        Json?            @map("meta_data") // Flexible key-value store
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  deletedAt       DateTime?        @map("deleted_at") // Soft delete
+
+  @@unique([sku, deletedAt])
+  @@index([slug])
+  @@index([status])
+  @@index([productType])
+  @@map("products")
+}
+
+// Variations for Variable Products
+model Variation {
+  id              String        @id @default(cuid())
+  productId       String        @map("product_id")
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku             String        @unique
+  attributes      VariationAttribute[]
+  pricing         Pricing?
+  inventory       Inventory?
+  shipping        Shipping?
+  images          ProductImage[]
+  status          ProductStatus @default(PUBLISHED)
+  sortOrder       Int           @default(0) @map("sort_order")
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  deletedAt       DateTime?     @map("deleted_at")
+
+  @@unique([productId, sku, deletedAt])
+  @@index([productId])
+  @@index([sku])
+  @@map("variations")
+}
+
+// Combo/Bundle Products
+model ComboItem {
+  id              String        @id @default(cuid())
+  comboProductId  String        @map("combo_product_id") // The bundle product
+  comboProduct    Product       @relation("ComboItems", fields: [comboProductId], references: [id], onDelete: Cascade)
+  productId       String        @map("product_id") // Individual product in bundle
+  product         Product       @relation("BundleItems", fields: [productId], references: [id])
+  quantity        Int           @default(1)
+  discountType    DiscountType? @map("discount_type")
+  discountValue   Float?        @map("discount_value")
+  isRequired      Boolean       @default(true) @map("is_required")
+  sortOrder       Int           @default(0) @map("sort_order")
+  metaData        Json?         @map("meta_data")
+
+  @@unique([comboProductId, productId])
+  @@index([comboProductId])
+  @@index([productId])
+  @@map("combo_items")
+}
+
+// Attributes System
+model Attribute {
+  id              String            @id @default(cuid())
+  name            String
+  slug            String            @unique
+  type            AttributeType
+  isFilterable    Boolean           @default(true) @map("is_filterable")
+  isVisible       Boolean           @default(true) @map("is_visible")
+  isVariation     Boolean           @default(false) @map("is_variation") // Used for product variations
+  sortOrder       Int               @default(0) @map("sort_order")
+  values          AttributeValue[]
+  categories      CategoryAttribute[]
+  metaData        Json?             @map("meta_data")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@map("attributes")
+}
+
+model AttributeValue {
+  id              String        @id @default(cuid())
+  attributeId     String        @map("attribute_id")
+  attribute       Attribute     @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  value           String
+  slug            String
+  swatchType      SwatchType?   @map("swatch_type") // Color, image, text
+  swatchValue     String?       @map("swatch_value") // Hex code, image URL, etc.
+  sortOrder       Int           @default(0) @map("sort_order")
+  metaData        Json?         @map("meta_data")
+  products        ProductAttribute[]
+  variations      VariationAttribute[]
+
+  @@unique([attributeId, slug])
+  @@index([attributeId])
+  @@map("attribute_values")
+}
+
+// Junction tables for attributes
+model ProductAttribute {
+  productId       String        @map("product_id")
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributeValueId String       @map("attribute_value_id")
+  attributeValue  AttributeValue @relation(fields: [attributeValueId], references: [id])
+  customValue     String?       @map("custom_value") // For attributes that allow custom input
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@id([productId, attributeValueId])
+  @@index([productId])
+  @@index([attributeValueId])
+  @@map("product_attributes")
+}
+
+model VariationAttribute {
+  variationId     String        @map("variation_id")
+  variation       Variation     @relation(fields: [variationId], references: [id], onDelete: Cascade)
+  attributeValueId String       @map("attribute_value_id")
+  attributeValue  AttributeValue @relation(fields: [attributeValueId], references: [id])
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@id([variationId, attributeValueId])
+  @@index([variationId])
+  @@index([attributeValueId])
+  @@map("variation_attributes")
+}
+
+// Pricing
+model Pricing {
+  id              String        @id @default(cuid())
+  productId       String?       @unique @map("product_id")
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variationId     String?       @unique @map("variation_id")
+  variation       Variation?    @relation(fields: [variationId], references: [id], onDelete: Cascade)
+  price           Float
+  compareAtPrice  Float?        @map("compare_at_price")
+  costPrice       Float?        @map("cost_price") // For profit calculations
+  wholesalePrice  Float?        @map("wholesale_price")
+  specialPrice    Float?        @map("special_price")
+  specialFrom     DateTime?     @map("special_from")
+  specialTo       DateTime?     @map("special_to")
+  currency        String        @default("USD")
+  tierPrices      TierPrice[]
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("pricing")
+}
+
+model TierPrice {
+  id              String        @id @default(cuid())
+  pricingId       String        @map("pricing_id")
+  pricing         Pricing       @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+  quantity        Int
+  price           Float
+  customerGroupId String?       @map("customer_group_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@unique([pricingId, quantity, customerGroupId])
+  @@index([pricingId])
+  @@map("tier_prices")
+}
+
+// Inventory
+model Inventory {
+  id              String        @id @default(cuid())
+  productId       String?       @unique @map("product_id")
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variationId     String?       @unique @map("variation_id")
+  variation       Variation?    @relation(fields: [variationId], references: [id], onDelete: Cascade)
+  sku             String        @unique
+  barcode         String?
+  quantity        Int           @default(0)
+  reservedStock   Int           @default(0) @map("reserved_stock") // For pending orders
+  availableStock  Int           @default(0) @map("available_stock") // Computed: quantity - reserved_stock
+  lowStockAlert   Int           @default(5) @map("low_stock_alert")
+  backorders      Boolean       @default(false)
+  backordersLimit Int?          @map("backorders_limit")
+  soldIndividually Boolean      @default(false) @map("sold_individually")
+  allowOutOfStock Boolean       @default(false) @map("allow_out_of_stock")
+  locations       StockLocation[]
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("inventory")
+}
+
+model StockLocation {
+  id              String        @id @default(cuid())
+  inventoryId     String        @map("inventory_id")
+  inventory       Inventory     @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  name            String
+  address         String?
+  quantity        Int
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@unique([inventoryId, name])
+  @@index([inventoryId])
+  @@map("stock_locations")
+}
+
+// Shipping
+model Shipping {
+  id              String        @id @default(cuid())
+  productId       String?       @unique @map("product_id")
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variationId     String?       @unique @map("variation_id")
+  variation       Variation?    @relation(fields: [variationId], references: [id], onDelete: Cascade)
+  weight          Float?
+  weightUnit      WeightUnit    @default(KG) @map("weight_unit")
+  length          Float?
+  width           Float?
+  height          Float?
+  dimensionUnit   DimensionUnit @default(CM) @map("dimension_unit")
+  shippingClassId String?       @map("shipping_class_id")
+  shippingClass   ShippingClass? @relation(fields: [shippingClassId], references: [id])
+  freeShipping    Boolean       @default(false) @map("free_shipping")
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("shipping")
+}
+
+model ShippingClass {
+  id              String        @id @default(cuid())
+  name            String        @unique
+  slug            String        @unique
+  description     String?
+  shipping        Shipping[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("shipping_classes")
+}
+
+// Tax
+model Tax {
+  id              String        @id @default(cuid())
+  productId       String?       @unique @map("product_id")
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  taxClassId      String?       @map("tax_class_id")
+  taxClass        TaxClass?     @relation(fields: [taxClassId], references: [id])
+  taxRate         Float?
+  taxIncluded     Boolean       @default(false) @map("tax_included")
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("tax")
+}
+
+model TaxClass {
+  id              String        @id @default(cuid())
+  name            String        @unique
+  slug            String        @unique
+  description     String?
+  rate            Float
+  tax             Tax[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("tax_classes")
+}
+
+// Categories
+model Category {
+  id              String        @id @default(cuid())
+  name            String
+  slug            String        @unique
+  description     String?
+  parentId        String?       @map("parent_id")
+  parent          Category?     @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children        Category[]    @relation("CategoryToCategory")
+  image           String?
+  sortOrder       Int           @default(0) @map("sort_order")
+  attributes      CategoryAttribute[]
+  products        CategoryOnProduct[]
+  seo             Seo?
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  deletedAt       DateTime?     @map("deleted_at")
+
+  @@index([slug])
+  @@index([parentId])
+  @@map("categories")
+}
+
+model CategoryOnProduct {
+  productId       String        @map("product_id")
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId      String        @map("category_id")
+  category        Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  isPrimary       Boolean       @default(false) @map("is_primary")
+  sortOrder       Int           @default(0) @map("sort_order")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@id([productId, categoryId])
+  @@index([productId])
+  @@index([categoryId])
+  @@map("categories_on_products")
+}
+
+model CategoryAttribute {
+  categoryId      String        @map("category_id")
+  category        Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  attributeId     String        @map("attribute_id")
+  attribute       Attribute     @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  isRequired      Boolean       @default(false) @map("is_required")
+  sortOrder       Int           @default(0) @map("sort_order")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@id([categoryId, attributeId])
+  @@index([categoryId])
+  @@index([attributeId])
+  @@map("category_attributes")
+}
+
+// Tags
+model Tag {
+  id              String        @id @default(cuid())
+  name            String        @unique
+  slug            String        @unique
+  products        TagOnProduct[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("tags")
+}
+
+model TagOnProduct {
+  productId       String        @map("product_id")
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tagId           String        @map("tag_id")
+  tag             Tag           @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@id([productId, tagId])
+  @@index([productId])
+  @@index([tagId])
+  @@map("tags_on_products")
+}
+
+// Media
+model ProductImage {
+  id              String        @id @default(cuid())
+  productId       String?       @map("product_id")
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variationId     String?       @map("variation_id")
+  variation       Variation?    @relation(fields: [variationId], references: [id], onDelete: Cascade)
+  url             String
+  alt             String?
+  title           String?
+  sortOrder       Int           @default(0) @map("sort_order")
+  isPrimary       Boolean       @default(false) @map("is_primary")
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([productId])
+  @@index([variationId])
+  @@map("product_images")
+}
+
+// SEO
+model Seo {
+  id              String        @id @default(cuid())
+  productId       String?       @unique @map("product_id")
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId      String?       @unique @map("category_id")
+  category        Category?     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  metaTitle       String?       @map("meta_title")
+  metaDescription String?       @map("meta_description")
+  metaKeywords    String?       @map("meta_keywords")
+  canonicalUrl    String?       @map("canonical_url")
+  robots          String?       @default("index,follow")
+  ogTitle         String?       @map("og_title")
+  ogDescription   String?       @map("og_description")
+  ogImage         String?       @map("og_image")
+  structuredData  Json?         @map("structured_data")
+  metaData        Json?         @map("meta_data")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("seo")
+}
+
+// Reviews & Questions
+model Review {
+  id              String        @id @default(cuid())
+  productId       String        @map("product_id")
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id])
+  rating          Int
+  title           String?
+  content         String?
+  pros            String[]      // List of pros
+  cons            String[]      // List of cons
+  isVerified      Boolean       @default(false) @map("is_verified")
+  status          ReviewStatus  @default(PENDING)
+  helpfulCount    Int           @default(0) @map("helpful_count")
+  images          ReviewImage[]
+  responses       ReviewResponse[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([productId])
+  @@index([userId])
+  @@index([rating])
+  @@index([status])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id              String        @id @default(cuid())
+  reviewId        String        @map("review_id")
+  review          Review        @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  url             String
+  sortOrder       Int           @default(0) @map("sort_order")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@index([reviewId])
+  @@map("review_images")
+}
+
+model ReviewResponse {
+  id              String        @id @default(cuid())
+  reviewId        String        @map("review_id")
+  review          Review        @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id])
+  content         String
+  isOfficial      Boolean       @default(false) @map("is_official")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([reviewId])
+  @@index([userId])
+  @@map("review_responses")
+}
+
+model Question {
+  id              String        @id @default(cuid())
+  productId       String        @map("product_id")
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id])
+  question        String
+  status          QuestionStatus @default(PENDING)
+  answers         Answer[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([productId])
+  @@index([userId])
+  @@index([status])
+  @@map("questions")
+}
+
+model Answer {
+  id              String        @id @default(cuid())
+  questionId      String        @map("question_id")
+  question        Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id])
+  answer          String
+  isOfficial      Boolean       @default(false) @map("is_official")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([questionId])
+  @@index([userId])
+  @@map("answers")
+}
+
+
+
+
+
+// Customers (simplified for reference)
+enum ROLE {
+  customer
+  admin
+  manager
+}
+
+enum GENDER {
+  male
+  female
+  other
+  prefer_not_to_say
+}
+
+model Customer {
+  id                    String    @id @default(cuid())
+
+  // Basic Info
+  name                  String?
+  email                 String?   @unique
+  phone                 String?   @unique
+  image                 String?   @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD2QGQa0Vn4OXoHwYnKMpXsyKKobQ7izCGzA&s")
+  dob                   DateTime?
+  gender                GENDER?
+
+  // Role & Status
+  role                  ROLE      @default(customer)
+  emailVerified         Boolean   @default(false)
+  phoneVerified         Boolean   @default(false)
+  isBlocked             Boolean   @default(false)
+  isDeleted             Boolean   @default(false)
+
+  // Security
+  failedLoginAttempts   Int       @default(0)
+  accountLockedUntil    DateTime?
+  lastLoginAt           DateTime?
+
+  // Relations
+  shippingAddresses     ShippingAddress[]
+  orders                Order[]
+  cart                  Cart?
+  wishlist              Wishlist[]
+  reviews               Review[]
+  reviewResponses       ReviewResponse[]
+  questions             Question[]
+  answers               Answer[]
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("customers")
+}
+
+
+
+
+// Shipping Address 
+enum ADDRESSTYPE {
+    home
+    office
+    other
+}
+
+model ShippingAddress {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  customerId String @db.ObjectId
+  customer   Customer   @relation(fields: [customerId], references: [id])
+
+  fullName     String
+  phone        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  postalCode   String
+  country      String
+  addressType  ADDRESSTYPE  @default(home)
+
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, addressLine1, addressLine2, city, state, postalCode, country,addressType])
+  @@map("shipping_address")
+}

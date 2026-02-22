@@ -1,20 +1,92 @@
 "use client";
-import { Heart, ShoppingCart, Truck, User } from "lucide-react";
-import Link from "next/link";
-
 import {
   Dropdown,
   DropdownContent,
   DropdownItem,
   DropdownTrigger,
 } from "@/components/ui/dropdown";
+import { Heart, ShoppingCart, Truck, User } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "../common/badge";
 import SearchBox from "../common/search-box";
 import { Button } from "../ui/button";
 import Separator from "../ui/separator";
 import { ThemeToggle } from "../ui/theme-toggle";
 import HeaderLogo from "./header-logo";
+
+import { Box, Settings, Users } from "lucide-react";
+
+export const dropdownItems = {
+  user: [
+    {
+      title: "My Profile",
+      link: "/user/details",
+      icon: <User />,
+    },
+    {
+      title: "My Wishlists",
+      link: "/my-wishlists",
+      icon: <Heart />,
+    },
+    {
+      title: "My Orders",
+      link: "/my-orders",
+      icon: <Truck />,
+    },
+    {
+      title: "My Cart Lists",
+      link: "/my-cart-lists",
+      icon: <ShoppingCart />,
+    },
+  ],
+
+  admin: [
+    {
+      title: "Dashboard",
+      link: "/admin/dashboard",
+      icon: <Box />,
+    },
+    {
+      title: "Manage Users",
+      link: "/admin/users",
+      icon: <Users />,
+    },
+    {
+      title: "Orders",
+      link: "/admin/orders",
+      icon: <Truck />,
+    },
+    {
+      title: "Settings",
+      link: "/admin/settings",
+      icon: <Settings />,
+    },
+  ],
+
+  manager: [
+    {
+      title: "Profile",
+      link: "/manager/profile",
+      icon: <User />,
+    },
+    {
+      title: "Team Orders",
+      link: "/manager/orders",
+      icon: <Truck />,
+    },
+    {
+      title: "Inventory",
+      link: "/manager/inventory",
+      icon: <Box />,
+    },
+    {
+      title: "Wishlists",
+      link: "/manager/wishlists",
+      icon: <Heart />,
+    },
+  ],
+};
 
 export default function MainHeader() {
   const products = [
@@ -46,6 +118,7 @@ export default function MainHeader() {
       name: "John Doe",
       email: "john@example.com",
       image: "/images/user.jpg",
+      role: "admin",
     },
   }; // Replace with actual session logic (e.g., from authClient.useSession())
   // const { data: session } = authClient.useSession();
@@ -84,26 +157,14 @@ export default function MainHeader() {
                   </div>
                 </DropdownTrigger>
                 <DropdownContent className="w-30">
-                  <DropdownItem
-                    title="My Profile"
-                    link="/user/details"
-                    icon={<User />}
-                  />
-                  <DropdownItem
-                    title="My Wishlists"
-                    link="/my-wishlists"
-                    icon={<Heart />}
-                  />
-                  <DropdownItem
-                    title="My Orders"
-                    link="/my-orders"
-                    icon={<Truck />}
-                  />
-                  <DropdownItem
-                    title="My Cart Lists"
-                    link="/my-cart-lists"
-                    icon={<ShoppingCart />}
-                  />
+                  {dropdownItems[session.user.role].map((item) => (
+                    <DropdownItem
+                      key={item.title}
+                      title={item.title}
+                      link={item.link}
+                      icon={item.icon}
+                    />
+                  ))}
                   {/* <DropdownItem>
                     <LogoutButton size="sm" fullWidth className="text-black" />
                   </DropdownItem> */}

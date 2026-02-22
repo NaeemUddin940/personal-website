@@ -36,7 +36,7 @@ export const buttonVariants = {
     outline:
       "border-border border-2 bg-accent hover:bg-secondary/20 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
     overlay:
-      "flex items-center bg-muted shadow-md hover:bg-primary/30 hover:ring ring-primary shadow-primary-foreground gap-1.5 cursor-pointer whitespace-nowrap px-3 py-1 text-xs font-medium text-muted-foreground transition-all duration-300",
+      "flex items-center border bg-muted shadow-md hover:bg-primary/30 hover:ring ring-primary shadow-primary-foreground gap-1.5 cursor-pointer whitespace-nowrap px-3 py-1 text-xs font-medium text-muted-foreground transition-all duration-300",
     glass:
       "bg-white/10 backdrop-blur-md border border-white/20 text-foreground hover:bg-white/20 hover:border-white/40 shadow-xl",
     slide:

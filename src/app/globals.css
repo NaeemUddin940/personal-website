@@ -5,22 +5,22 @@
 :root {
   --background: #f8fafc;
   --foreground: #1e293b;
-  --card: #ffffff;
+  --card: #f2f6fb;
   --card-foreground: #1e293b;
-  --popover: #ffffff;
+  --popover: #eff5ff;
   --popover-foreground: #1e293b;
   --primary: #f75858;
   --primary-foreground: #ffffff;
-  --secondary: #e5e7eb;
+  --secondary: #e4edff;
   --secondary-foreground: #374151;
   --muted: #f3f4f6;
   --muted-foreground: #6b7280;
-  --accent: #e0e7ff;
+  --accent: #e7eaf3;
   --accent-foreground: #374151;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #d1d5db;
-  --input: #d1d5db;
+  --input: #eff5ff;
   --ring: #6366f1;
   --chart-1: #6366f1;
   --chart-2: #4f46e5;
@@ -69,9 +69,9 @@
   --card-foreground: #e2e8f0;
   --popover: #0f172a;
   --popover-foreground: #e2e8f0;
-  --primary: #6366f1;
+  --primary: #624dfe;
   --primary-foreground: #ffffff;
-  --secondary: #161f2d;
+  --secondary: #202d41;
   --secondary-foreground: #f8fafc;
   --muted: #1e293b;
   --muted-foreground: #94a3b8;
@@ -195,4 +195,55 @@
   @apply dark:shadow-[6px_6px_12px_#313c4a,-6px_-6px_12px_#1e252e];
   /* The custom shadow for light mode (tailwind utility classes) */
   @apply shadow-[6px_6px_12px_#c5c5c5,-6px_-6px_12px_#ffffff];
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar {
+  width: 14px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #624dfe;
+  border-radius: 20px;
+  /* Default: Thin look using border + background-clip */
+  border: 5px solid transparent;
+  background-clip: content-box;
+  transition: all 0.3s ease;
+}
+
+/* Hover: Make it thick */
+::-webkit-scrollbar-thumb:hover {
+  border: 2px solid transparent;
+  background-color: #4e3ecb;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+/* Firefox Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #624dfe transparent;
 }
