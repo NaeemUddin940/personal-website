@@ -15,6 +15,7 @@ import Separator from "../ui/separator";
 import { ThemeToggle } from "../ui/theme-toggle";
 import HeaderLogo from "./header-logo";
 
+import { authClient } from "@/utils/auth-client";
 import { Box, Settings, Users } from "lucide-react";
 
 export const dropdownItems = {
@@ -112,16 +113,9 @@ export default function MainHeader() {
       rating: 4.7,
     },
   ];
-  // const [searchResult, setSearchResult] = useState("");
-  const session = {
-    user: {
-      name: "John Doe",
-      email: "john@example.com",
-      image: "/images/user.jpg",
-      role: "admin",
-    },
-  }; // Replace with actual session logic (e.g., from authClient.useSession())
-  // const { data: session } = authClient.useSession();
+
+  const { data: session } = authClient.useSession();
+
   return (
     <header className="border-b bg-card border-border">
       <div className="flex items-center justify-between container mx-auto px-4 h-19">

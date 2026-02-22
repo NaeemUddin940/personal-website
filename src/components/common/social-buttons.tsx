@@ -1,5 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/utils/auth-client";
+import toast from "react-hot-toast";
 const GoogleIcon = () => (
   <svg
     className="w-5 h-5 mr-2"
@@ -44,24 +46,25 @@ const FacebookIcon = () => (
 );
 
 export default function SocialButtons() {
-  // const { isPending } = authClient.useSession();
+  const { isPending } = authClient.useSession();
 
-  // function SocialLogin(provider: "google" | "github" | "facebook" | "discord") {
-  //   authClient.signIn
-  //     .social({ provider, callbackURL: "/" })
-  //     .then((resolve) => {
-  //       if (resolve.error) {
-  //         toast.error(resolve.error.message || "Something went wrong");
-  //         return;
-  //       }
+  function SocialLogin(provider: "google" | "facebook") {
+    authClient.signIn
+      .social({ provider, callbackURL: "/" })
+      .then((resolve) => {
+        if (resolve.error) {
+          console.log(resolve.error.statusText);
+          toast.error(resolve.error.statusText || "Something went wrong");
+          return;
+        }
 
-  //       toast.success(`Redirecting to ${provider}...`);
-  //     })
-  //     .catch((error) => {
-  //       toast.error("An unexpected error occurred");
-  //       console.error(error.message);
-  //     });
-  // }
+        toast.success(`Redirecting to ${provider}...`);
+      })
+      .catch((error) => {
+        toast.error("An unexpected error occurred");
+        console.error(error.message);
+      });
+  }
 
   const providers = [
     { id: "google", name: "Google", icon: GoogleIcon },
@@ -79,8 +82,8 @@ export default function SocialButtons() {
       {providers.map((p) => (
         <Button
           key={p.id}
-          // isLoading={isPending}
-          // onClick={() => SocialLogin(p.id)}
+          isLoading={isPending}
+          onClick={() => SocialLogin(p.id)}
           variant="outline"
           icon={p.icon}
         >

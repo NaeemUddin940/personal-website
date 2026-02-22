@@ -1,8 +1,6 @@
 "use client";
 import { SignUp } from "@/actions/sign-up";
-
 import { Button } from "@/components/ui/button";
-
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { usePathname } from "next/navigation";
 import { useActionState } from "react";
@@ -36,8 +34,6 @@ export default function AuthForm() {
       </div>
 
       {/* RIGHT SIDE: Form */}
-      {/* <Card>
-        <CardContent className="p-0"> */}
       <div className="flex-1 w-full flex flex-col justify-center">
         <Card className="bg-secondary/50">
           <CardContent>
@@ -75,7 +71,7 @@ export default function AuthForm() {
                 //   !isRegister
                 //     ? {
                 //         label: "Forgot Password?",
-                //         onClick: handleForgotPassword,
+                //         // onClick: handleForgotPassword,
                 //       }
                 //     : undefined
                 // }
@@ -97,8 +93,6 @@ export default function AuthForm() {
           </CardContent>
         </Card>
       </div>
-      {/* </CardContent>
-      </Card> */}
     </div>
   );
 }
