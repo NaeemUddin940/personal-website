@@ -1,0 +1,164 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../prisma/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ROLE {
+  admin
+  user
+  manager
+}
+
+enum GENDER {
+  male
+  female
+  other
+  prefer_not_to_say
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  dob           DateTime?
+  phone         String?
+  gender        GENDER?
+  image         String?   @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD2QGQa0Vn4OXoHwYnKMpXsyKKobQ7izCGzA&s")
+
+  // Role & Status
+  role          ROLE  @default(user)
+  emailVerified         Boolean   @default(false)
+  phoneVerified         Boolean   @default(false)
+  isBlocked             Boolean   @default(false)
+  isDeleted             Boolean   @default(false)
+
+// Security
+  failedLoginAttempts   Int       @default(0)
+  accountLockedUntil    DateTime?
+  lastLoginAt           DateTime?
+
+  // Relations
+  shippingAddresses     ShippingAddress[]
+  // orders                Order[]
+  // cart                  Cart?
+  // wishlist              Wishlist[]
+  // reviews               Review[]
+  // reviewResponses       ReviewResponse[]
+  // questions             Question[]
+  // answers               Answer[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("user")
+}
+
+// এনাম ডিফাইন করা ভালো
+enum AddressType {
+  HOME
+  OFFICE
+  OTHER
+}
+
+model ShippingAddress {
+  // ID ফিল্ড ইমপ্রুভমেন্ট
+  id     String @id @default(cuid()) @map("id")
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // কন্টাক্ট ইনফরমেশন
+  fullName     String @map("full_name")
+  phone        String @map("phone")
+  
+  // অ্যাড্রেস ফিল্ডস
+  addressLine1 String @map("address_line1")
+  addressLine2 String? @map("address_line2")
+  city         String @map("city")
+  state        String @map("state")
+  postalCode   String @map("postal_code")
+  country      String @map("country") @default("Bangladesh")
+  
+  // অ্যাড্রেস টাইপ এনাম ব্যবহার করা ভালো
+  addressType  AddressType @default(HOME) @map("address_type")
+
+  // ডিফল্ট অ্যাড্রেস
+  isDefault Boolean @default(false) @map("is_default")
+
+  // টাইমস্ট্যাম্প
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // ডেলিভারি ইনস্ট্রাকশন (অপশনাল)
+  deliveryInstructions String? @map("delivery_instructions")
+
+  // ইনডেক্স এবং কনস্ট্রেইন্ট
+  @@unique([userId, addressLine1, addressLine2, city, state, postalCode, country])
+  @@index([userId])
+  @@index([isDefault])
+  @@index([city, state])
+  @@index([phone])
+  
+  // টেবিলের নাম
+  @@map("shipping_addresses")
+}
+
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
