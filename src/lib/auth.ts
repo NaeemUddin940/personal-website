@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { nextCookies } from "better-auth/next-js";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
@@ -9,6 +10,30 @@ export const auth = betterAuth({
   session: {
     expiresIn: 5 * 60 * 60,
     updateAge: 3 * 60 * 60,
+  },
+
+  emailAndPassword: {
+    enabled: true,
+    // requireEmailVerification: true,
+    maxPasswordLength: 16,
+    minPasswordLength: 8,
+  },
+
+  plugins: [nextCookies()],
+
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.role = user.role;
+      }
+      return token;
+    },
+    session: async ({ session, token }) => {
+      if (session.user) {
+        session.user.role = token.role;
+      }
+      return session;
+    },
   },
 
   user: {
@@ -21,19 +46,8 @@ export const auth = betterAuth({
         type: "boolean",
         defaultValue: false,
       },
-      isDeleted: {
-        type: "boolean",
-        defaultValue: false,
-      },
-      failedLoginAttempts: {
-        type: "number",
-        defaultValue: 0,
-      },
-      accountLockedUntil: {
-        type: "date",
-      },
-      lastLoginAt: {
-        type: "date",
+      image: {
+        type: "string",
       },
     },
   },
@@ -48,16 +62,6 @@ export const auth = betterAuth({
       prompt: "select_account",
       clientId: process.env.FACEBOOK_CLIENT_ID as string,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
-    },
-  },
-
-  databaseHooks: {
-    user: {
-      create: {
-        before: async (user) => {
-          return { ...user, role: user.role || "user" };
-        },
-      },
     },
   },
 });

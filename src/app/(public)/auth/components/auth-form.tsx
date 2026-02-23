@@ -1,24 +1,60 @@
 "use client";
+import { SignIn } from "@/actions/sign-in";
 import { SignUp } from "@/actions/sign-up";
+import Input from "@/components/common/input";
+import SocialButtons from "@/components/common/social-buttons";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { usePathname } from "next/navigation";
-import { useActionState } from "react";
-import { Card, CardContent } from "../ui/card";
-import { DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
-import Input from "./input";
-import SocialButtons from "./social-buttons";
+import { usePathname, useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
+import toast from "react-hot-toast";
 
-export default function AuthForm() {
+export default function AuthForm(closeModal) {
   const params = usePathname();
-  const [state, formAction, isLoading] = useActionState(SignUp, {
-    success: false,
-    errors: null,
-    inputs: null,
-    message: null,
-  });
+  const router = useRouter();
   const isRegister = params.includes("/sign-up") ? true : false;
+  const [state, formAction, isLoading] = useActionState(
+    isRegister ? SignUp : SignIn,
+    {
+      success: false,
+      action: null,
+      errors: null,
+      inputs: null,
+      message: null,
+      data: null,
+    },
+  );
 
+  useEffect(() => {
+    if (!state?.message) return;
+
+    if (state?.success) {
+      toast.success(state?.message);
+
+      if (state?.action === "SIGN_IN") {
+        const role = state.data?.role;
+
+        if (typeof closeModal === "function") {
+          closeModal(false);
+        }
+        if (role === "admin") {
+          router.push("/admin/dashboard");
+          router.refresh();
+        } else {
+          router.push("/");
+          router.refresh();
+        }
+      }
+    } else {
+      toast.error(state?.message);
+    }
+  }, [state, router, closeModal]);
   return (
     <div className="flex flex-col md:flex-row items-stretch w-full max-h-120">
       {/* LEFT SIDE: Animation - flex-1 and self-stretch ensures it fills the height */}
@@ -36,7 +72,7 @@ export default function AuthForm() {
       {/* RIGHT SIDE: Form */}
       <div className="flex-1 w-full flex flex-col justify-center">
         <Card className="bg-secondary/50">
-          <CardContent>
+          <CardContent className="w-md">
             <DialogHeader className="items-center text-center">
               <DialogTitle className="text-3xl font-bold mb-2">
                 {isRegister ? "Create Account" : "Welcome Back"}
@@ -54,7 +90,8 @@ export default function AuthForm() {
                   label="Enter Full Name"
                   name="name"
                   placeholder="Enter Your Full Name"
-                  defaultValue={state?.data?.name}
+                  defaultValue={state?.inputs?.name}
+                  error={state?.errors?.name}
                 />
               )}
               <Input
@@ -62,7 +99,8 @@ export default function AuthForm() {
                 label="Enter Email Address"
                 name="email"
                 placeholder="Enter Your Email Address"
-                defaultValue={state?.data?.email}
+                defaultValue={state?.inputs?.email}
+                error={state?.errors?.email}
               />
               <Input
                 type="password"
@@ -77,7 +115,17 @@ export default function AuthForm() {
                 // }
                 name="password"
                 placeholder="Enter Your Password"
+                error={state?.errors?.password}
               />
+              {!isRegister && (
+                <Input
+                  type="password"
+                  label="Enter Confirm Password"
+                  name="confirmPassword"
+                  placeholder="Enter Your Confirm Password"
+                  error={state?.errors?.confirmPassword}
+                />
+              )}
 
               <Button
                 fullWidth

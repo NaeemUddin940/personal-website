@@ -1,5 +1,5 @@
-import AuthForm from "@/components/common/auth-form";
 import { Card, CardContent } from "@/components/ui/card";
+import AuthForm from "../components/auth-form";
 
 export default function SignUpPage() {
   return (

@@ -1,5 +1,6 @@
 "use client";
-import AuthForm from "@/components/common/auth-form";
+
+import AuthForm from "@/app/(public)/auth/components/auth-form";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 

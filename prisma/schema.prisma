@@ -5,18 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../prisma/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-}
-
-enum ROLE {
-  admin
-  user
-  manager
 }
 
 enum GENDER {
@@ -36,7 +30,7 @@ model User {
   image         String?   @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD2QGQa0Vn4OXoHwYnKMpXsyKKobQ7izCGzA&s")
 
   // Role & Status
-  role          ROLE  @default(user)
+  role          String    @default("user")
   emailVerified         Boolean   @default(false)
   phoneVerified         Boolean   @default(false)
   isBlocked             Boolean   @default(false)

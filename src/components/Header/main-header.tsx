@@ -152,7 +152,7 @@ export default function MainHeader() {
                   </div>
                 </DropdownTrigger>
                 <DropdownContent className="w-30">
-                  {dropdownItems[session.user.role].map((item) => (
+                  {dropdownItems[session?.user?.role]?.map((item) => (
                     <DropdownItem
                       key={item.title}
                       title={item.title}

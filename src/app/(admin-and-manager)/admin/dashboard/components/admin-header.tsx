@@ -1,4 +1,4 @@
-import LogoutButton from "@/components/common/LogoutButton";
+import LogoutButton from "@/components/common/logout-button";
 import { Button } from "@/components/ui/button";
 import {
   Dropdown,
@@ -6,19 +6,13 @@ import {
   DropdownTrigger,
 } from "@/components/ui/dropdown";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { authClient } from "@/utils/auth-client";
 import { Search, Settings, User } from "lucide-react";
 import Image from "next/image";
 
 export default function AdminHeader() {
-  // const session = await auth.api.getSession({ headers: await headers() });
-  const session = {
-    user: {
-      name: "John Doe",
-      email: "john@example.com",
-      image: "/images/user.jpg",
-      role: "admin",
-    },
-  };
+  const { data: session } = authClient.useSession();
+
   return (
     <header className="sticky bg-card h-fit top-0 z-500 w-full border-b border-border shadow-sm px-4 md:px-6 py-3">
       <div className="mx-auto flex items-center justify-between gap-4">
@@ -97,7 +91,7 @@ export default function AdminHeader() {
               </div>
             </DropdownTrigger>
             <DropdownContent width="70">
-              <div className="space-y-2">
+              <div className="space-y-2 w-50">
                 <Button
                   size="sm"
                   variant="default"
@@ -117,7 +111,7 @@ export default function AdminHeader() {
                   Settings
                 </Button>
 
-                {/* <LogoutButton /> */}
+                <LogoutButton size="sm" />
               </div>
             </DropdownContent>
           </Dropdown>
