@@ -32,7 +32,7 @@ export const buttonVariants = {
       "flex cursor-pointer items-center gap-1.5 text-[11px] font-bold  hover:text-primary text-primary/90 transition-colors uppercase tracking-tight",
     primary:
       "bg-primary text-primary-foreground border border-border hover:border-primary hover:text-primary-foreground hover:bg-primary/80 text-sm font-medium",
-    glow: "bg-primary text-white shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_35px_rgba(79,70,229,0.6)] hover:-translate-y-1",
+    glow: "bg-primary text-white shadow-[0_0_20px_hsl(var(--primary)/0.4)] hover:shadow-[0_0_35px_hsl(var(--primary)/0.6)] hover:-translate-y-1",
     outline:
       "border-border border-2 bg-accent hover:bg-secondary/20 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
     overlay:

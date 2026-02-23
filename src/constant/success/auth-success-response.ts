@@ -17,4 +17,11 @@ export const AUTH_SUCCESS_RESPONSE = {
     message: "🔑 Login successful! Welcome back.",
     status: 200,
   },
+  SEND_PASSWORD_RESET: {
+    success: true,
+    action: "SEND_PASSWORD_RESET",
+    message:
+      "✅ Password reset email sent successfully. Please check your inbox and spam folder.",
+    status: 200,
+  },
 };

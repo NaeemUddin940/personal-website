@@ -1,11 +1,20 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-import { ReactNode, useId, useState } from "react";
+import Link from "next/link";
+import { ChangeEvent, ReactNode, useId, useState } from "react";
 
 type IconType =
   | React.ComponentType<{ className?: string; strokeWidth?: number }>
   | ReactNode;
+
+// 1. Forgot Password-এর জন্য নতুন টাইপ ডিফাইন করলাম
+interface ForgotPasswordConfig {
+  label?: string; // যেমন: "Forgot Password?"
+  href?: string; // লিংকের জন্য
+  onClick?: () => void; // ফাংশন বা মোডাল ওপেন করার জন্য
+}
 
 interface InputFieldProps {
   name: string;
@@ -16,13 +25,15 @@ interface InputFieldProps {
   containerClassName?: string;
   rows?: number;
   icon?: IconType;
+  // 2. showForgotPassword কে সরিয়ে নতুন প্রপ দিলাম যা flexible
+  forgotPassword?: ForgotPasswordConfig;
   iconPosition?: "left" | "right";
   iconClassName?: string;
   required?: boolean;
-  // পরিবর্তন: সরাসরি string বা string array রিসিভ করবে
   error?: string | string[];
   id?: string;
   defaultValue?: string | number;
+  onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   [key: string]: any;
 }
 
@@ -34,11 +45,13 @@ export default function Input({
   className = "",
   containerClassName = "",
   rows = 4,
+  onChange,
+  forgotPassword, // showForgotPassword-এর বদলে এটি ব্যবহার করছি
   icon: Icon,
   iconPosition = "left",
   iconClassName = "",
   required = false,
-  error, // errors এর বদলে error
+  error,
   defaultValue,
   ...props
 }: InputFieldProps) {
@@ -49,14 +62,13 @@ export default function Input({
   const isPassword = type === "password";
   const isTextarea = type === "textarea";
 
-  // Error Logic: string হোক বা array, আমরা প্রথম মেসেজটি নেব
   const errorMessage = Array.isArray(error) ? error[0] : error;
 
   const baseClasses = `
-    w-full px-4 py-2.5 rounded-lg transition-all duration-200 outline-none border
-    bg-input text-foreground border-border
+    w-full px-4 py-2 rounded-lg transition-all duration-200 outline-none border
+    bg-muted text-foreground border-border
     placeholder:text-muted-foreground
-    focus:ring-2 focus:ring-primary/10 focus:border-primary
+    focus:ring-2 focus:ring-primary/70 focus:border-primary
     disabled:opacity-60 disabled:cursor-not-allowed
   `;
 
@@ -66,7 +78,7 @@ export default function Input({
   `;
 
   const errorClasses = errorMessage
-    ? "border-red-500 focus:ring-red-500/10 focus:border-red-500"
+    ? "border-destructive focus:ring-destructive/20 focus:border-destructive"
     : "";
 
   const renderIcon = (pos: "left" | "right") => {
@@ -77,7 +89,7 @@ export default function Input({
       >
         {typeof Icon === "function" ? (
           <Icon
-            className={`h-5 w-5 text-gray-600 ${iconClassName}`}
+            className={`h-5 w-5 text-muted-foreground ${iconClassName}`}
             strokeWidth={1.5}
           />
         ) : (
@@ -87,15 +99,50 @@ export default function Input({
     );
   };
 
+  // 3. Forgot Password রেন্ডার করার ফাংশন
+  const renderForgotPassword = () => {
+    if (!forgotPassword || type !== "password") return null;
+
+    const { label = "Forgot Password?", href, onClick } = forgotPassword;
+    const commonClasses =
+      "text-md italic font-medium text-primary hover:underline cursor-pointer transition-colors";
+
+    // যদি href থাকে, তাহলে <a> ট্যাগ রেন্ডার হবে
+    if (href) {
+      return (
+        <Link href={href} className={commonClasses}>
+          {label}
+        </Link>
+      );
+    }
+
+    // যদি onClick থাকে, তাহলে <button> রেন্ডার হবে
+    if (onClick) {
+      return (
+        <button type="button" onClick={onClick} className={commonClasses}>
+          {label}
+        </button>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className={`flex flex-col gap-1.5 w-full ${containerClassName}`}>
       {label && (
-        <label
-          htmlFor={inputId}
-          className="text-sm font-semibold text-muted-accent cursor-pointer w-fit"
-        >
-          {label} {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor={inputId}
+            className="text-sm font-semibold text-foreground/80 cursor-pointer w-fit"
+          >
+            {label}{" "}
+            {required && <span className="text-destructive ml-1">*</span>}
+          </label>
+
+          {/* এখানে Forgot Password কল করা হলো */}
+          {renderForgotPassword()}
+        </div>
       )}
 
       <div className="relative group">
@@ -107,25 +154,31 @@ export default function Input({
             rows={rows}
             placeholder={placeholder}
             defaultValue={defaultValue}
-            className={`${baseClasses} ${errorClasses} resize-none ${className}`}
+            onChange={onChange}
+            className={cn(
+              `${baseClasses} ${errorClasses} resize-none ${className}`,
+            )}
             {...props}
           />
         ) : (
-          <input
-            id={inputId}
-            name={name}
-            type={isPassword ? (showPassword ? "text" : "password") : type}
-            placeholder={placeholder}
-            defaultValue={defaultValue}
-            className={`${baseClasses} ${iconPaddingClasses} ${errorClasses} ${className}`}
-            {...props}
-          />
+          <>
+            <input
+              id={inputId}
+              name={name}
+              type={isPassword ? (showPassword ? "text" : "password") : type}
+              placeholder={placeholder}
+              defaultValue={defaultValue}
+              onChange={onChange}
+              className={`${baseClasses} ${iconPaddingClasses} ${errorClasses} ${className}`}
+              {...props}
+            />
+          </>
         )}
         {isPassword && (
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 cursor-pointer -translate-y-1/2 text-foreground p-1"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -136,7 +189,7 @@ export default function Input({
       {errorMessage && (
         <span
           role="alert"
-          className="text-[12px] font-medium text-red-400 mt-0.5 ml-1 animate-in fade-in slide-in-from-top-1"
+          className="text-[12px] font-medium text-destructive mt-0.5 ml-1 animate-in fade-in slide-in-from-top-1"
         >
           {errorMessage}
         </span>

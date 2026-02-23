@@ -36,6 +36,16 @@ export const SignUp = async (formState: FormState, formData: FormData) => {
       headers: await headers(),
     });
 
+    const data = await auth.api.sendVerificationOTP({
+      body: {
+        email,
+        type: "email-verification",
+      },
+    });
+    if (!data.success) {
+      return AUTH_ERROR_RESPONSE.EMAIL_SEND_FAILED;
+    }
+
     if (newUser) {
       return AUTH_SUCCESS_RESPONSE.SIGN_UP;
     }

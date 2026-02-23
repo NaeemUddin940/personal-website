@@ -1,4 +1,5 @@
 "use client";
+import { sentPasswordResetEmail } from "@/actions/sent-password-reset-email";
 import { SignIn } from "@/actions/sign-in";
 import { SignUp } from "@/actions/sign-up";
 import Input from "@/components/common/input";
@@ -12,12 +13,14 @@ import {
 } from "@/components/ui/dialog";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function AuthForm(closeModal) {
   const params = usePathname();
   const router = useRouter();
+  const [email, setEmail] = useState("");
+
   const isRegister = params.includes("/sign-up") ? true : false;
   const [state, formAction, isLoading] = useActionState(
     isRegister ? SignUp : SignIn,
@@ -47,14 +50,29 @@ export default function AuthForm(closeModal) {
           router.push("/admin/dashboard");
           router.refresh();
         } else {
-          router.push("/");
           router.refresh();
+          router.push("/");
         }
       }
     } else {
       toast.error(state?.message);
     }
   }, [state, router, closeModal]);
+
+  // Components/ForgotPassword.tsx
+  async function requestPasswordEmailSent() {
+    // Call the server action
+    const response = await sentPasswordResetEmail(email);
+
+    if (response.success) {
+      toast.success(response.message);
+      console.log("Success:", response.action);
+    } else {
+      toast.error(response.message);
+      console.log("Error:", response.action);
+    }
+  }
+
   return (
     <div className="flex flex-col md:flex-row items-stretch w-full max-h-120">
       {/* LEFT SIDE: Animation - flex-1 and self-stretch ensures it fills the height */}
@@ -101,18 +119,15 @@ export default function AuthForm(closeModal) {
                 placeholder="Enter Your Email Address"
                 defaultValue={state?.inputs?.email}
                 error={state?.errors?.email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <Input
                 type="password"
                 label="Enter Password"
-                // forgotPassword={
-                //   !isRegister
-                //     ? {
-                //         label: "Forgot Password?",
-                //         // onClick: handleForgotPassword,
-                //       }
-                //     : undefined
-                // }
+                forgotPassword={{
+                  label: "Forgot Password?",
+                  onClick: () => requestPasswordEmailSent(),
+                }}
                 name="password"
                 placeholder="Enter Your Password"
                 error={state?.errors?.password}
