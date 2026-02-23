@@ -17,6 +17,7 @@ import HeaderLogo from "./header-logo";
 
 import { authClient } from "@/utils/auth-client";
 import { Box, Settings, Users } from "lucide-react";
+import LogoutButton from "../common/logout-button";
 
 export const dropdownItems = {
   user: [
@@ -160,8 +161,8 @@ export default function MainHeader() {
                     />
                   ))}
                   {/* <DropdownItem>
-                    <LogoutButton size="sm" fullWidth className="text-black" />
                   </DropdownItem> */}
+                  <LogoutButton size="sm" className="text-black" />
                 </DropdownContent>
               </Dropdown>
             ) : (

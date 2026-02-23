@@ -3,6 +3,7 @@
 import { UniversalImageUploader } from "@/components/common/universal-image-uploader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { authClient } from "@/utils/auth-client";
 import {
   Heart,
   MapPin,
@@ -17,8 +18,9 @@ import OrdersTab from "../../components/orders-tab";
 import ProfileTab from "../../components/profile-tab";
 import SecurityTab from "../../components/security-tab";
 import WishlistTab from "../../components/wishlist-tab";
+
 export default function UserDetails() {
-  const session = { user: { name: "John Doe", email: "john.doe@example.com" } };
+  const { data: session } = authClient.useSession();
 
   return (
     <div className="min-h-fit bg-background p-4 md:p-10">

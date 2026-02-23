@@ -55,7 +55,7 @@ export default function Header() {
           isMainVisible
             ? isTopVisible
               ? "translate-y-0"
-              : "-translate-y-[49px]" // TopHeader হাইড হলে এটি একদম উপরে থাকবে
+              : "-translate-y-12.25" // TopHeader হাইড হলে এটি একদম উপরে থাকবে
             : "-translate-y-[162%]" // স্ক্রল করার সময় পুরোপুরি হাইড থাকবে
         }`}
       >

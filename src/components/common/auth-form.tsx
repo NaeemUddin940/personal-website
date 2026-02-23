@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { usePathname } from "next/navigation";
 import { useActionState } from "react";
-import SocialButtons from "./social-buttons";
 import { Card, CardContent } from "../ui/card";
 import { DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import Input from "./input";
+import SocialButtons from "./social-buttons";
 
 export default function AuthForm() {
   const params = usePathname();

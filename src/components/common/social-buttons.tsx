@@ -50,7 +50,10 @@ export default function SocialButtons() {
 
   function SocialLogin(provider: "google" | "facebook") {
     authClient.signIn
-      .social({ provider, callbackURL: "/" })
+      .social({
+        provider,
+        callbackURL: "/auth-callback",
+      })
       .then((resolve) => {
         if (resolve.error) {
           console.log(resolve.error.statusText);

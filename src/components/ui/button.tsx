@@ -24,7 +24,7 @@ type IconType =
   | ReactNode;
 
 export const buttonVariants = {
-  base: "relative inline-flex whitespace-nowrap items-center justify-center cursor-pointer rounded-md font-bold transition-all duration-200 overflow-hidden focus:outline-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group min-w-0 w-full md:w-auto",
+  base: "relative inline-flex animate-in fade-in zoom-in whitespace-nowrap items-center justify-center cursor-pointer rounded-md font-bold transition-all duration-200 overflow-hidden focus:outline-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group min-w-0 w-full",
   variants: {
     default:
       "border border-input-border shadow-sm text-sm text-foreground font-medium",
