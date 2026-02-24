@@ -14,7 +14,7 @@ export default function AdminHeader() {
   const { data: session } = authClient.useSession();
 
   return (
-    <header className="sticky bg-card h-fit top-0 z-500 w-full border-b border-border shadow-sm px-4 md:px-6 py-3">
+    <header className="sticky bg-card h-fit top-0 z-50 w-full border-b border-border shadow-sm px-4 md:px-6 py-3">
       <div className="mx-auto flex items-center justify-between gap-4">
         {/* Page Title in Desktop */}
         <div className="h-10 md:hidden w-10">

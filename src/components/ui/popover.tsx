@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion, MotionProps, Variants } from "framer-motion";
+import { ChevronRight, LucideIcon } from "lucide-react";
 import * as React from "react";
 
 /* =========================================================
@@ -190,7 +191,7 @@ export function PopoverContent({
           exit={animations[animationType].exit}
           style={{ top: `calc(100% + ${sideOffset}px)` }}
           className={cn(
-            "absolute z-50 w-72 rounded-xl border bg-white p-4 shadow-xl dark:bg-zinc-950 dark:border-zinc-800",
+            "absolute z-50 w-72 rounded-xl border p-4 shadow-xl bg-card border-border",
             alignmentClasses[align],
             className,
           )}
@@ -202,6 +203,86 @@ export function PopoverContent({
     </AnimatePresence>
   );
 }
+
+interface PopoverItemProps {
+  /** Optional Lucide icon component */
+  icon?: LucideIcon;
+  /** Primary text label */
+  label: string;
+  /** Optional secondary text description */
+  description?: string;
+  /** Optional click handler function */
+  onClick?: () => void;
+  /** Visual style variant */
+  variant?: "default" | "destructive";
+  /** Additional Tailwind CSS classes */
+  className?: string;
+  children?: React.ReactNode;
+}
+
+/**
+ * Reusable PopoverItem Component (TypeScript Version)
+ */
+export const PopoverItem: React.FC<PopoverItemProps> = ({
+  icon: Icon,
+  label,
+  description,
+  onClick,
+  variant = "default",
+  className,
+  children,
+}) => {
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        "group flex items-center gap-3 px-2 py-1 rounded-xl cursor-pointer transition-all duration-200 select-none",
+        "hover:bg-muted text-muted-foreground hover:text-primary",
+        className,
+      )}
+    >
+      {children ? (
+        <span className="flex items-center justify-between w-full text-lg">
+          {children}
+        </span>
+      ) : (
+        <>
+          {/* Icon Container - Only renders if Icon is provided */}
+          {Icon && (
+            <div
+              className={cn(
+                "flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 shrink-0",
+                variant === "destructive"
+                  ? "bg-red-100 dark:bg-red-900/30 group-hover:bg-red-200"
+                  : "bg-gray-100 dark:bg-zinc-700 group-hover:bg-white dark:group-hover:bg-zinc-600",
+              )}
+            >
+              <Icon size={18} strokeWidth={2.2} />
+            </div>
+          )}
+
+          {/* Text Content */}
+          <div className={cn("flex-1 min-w-0", !Icon && "pl-1")}>
+            <p className="text-[13.5px] font-semibold tracking-tight leading-none">
+              {label}
+            </p>
+            {description && (
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1 truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-400">
+                {description}
+              </p>
+            )}
+          </div>
+
+          {/* Right Accessory */}
+          <ChevronRight
+            size={14}
+            className="text-zinc-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200 shrink-0"
+          />
+        </>
+      )}
+    </div>
+  );
+};
 
 /* =========================================================
    Popover Subcomponents

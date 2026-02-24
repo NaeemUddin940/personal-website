@@ -1,20 +1,24 @@
 "use server";
 import { FormState } from "@/@types/form-state";
+import { ReturnType } from "@/@types/return-type";
 import { AUTH_ERROR_RESPONSE } from "@/constant/error/auth-error-response";
 import { AUTH_SUCCESS_RESPONSE } from "@/constant/success/auth-success-response";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateSchema } from "@/utils/validate-schema";
-import { signUpSchema } from "@/validation/sign-up-schema";
+import { SignUpInput, signUpSchema } from "@/validation/sign-up-schema";
 import { headers } from "next/headers";
 
-export const SignUp = async (formState: FormState, formData: FormData) => {
-  const result = validateSchema(signUpSchema, formData);
+export const SignUp = async (
+  _formState: FormState,
+  formData: FormData,
+): Promise<ReturnType> => {
+  const result = validateSchema<SignUpInput>(signUpSchema, formData);
   if (!result.success) {
-    return result;
+    return result as SignUpInput;
   }
 
-  const { name, email, password } = result.data;
+  const { name, email, password } = result.data as any;
   try {
     const existingUser = await prisma.user.findFirst({
       where: { email },

@@ -20,3 +20,4 @@ export const signUpSchema = z.object({
     .regex(/[^A-Za-z0-9]/, "Must contain at least one special character"),
 });
 
+export type SignUpInput = z.infer<typeof signUpSchema>;

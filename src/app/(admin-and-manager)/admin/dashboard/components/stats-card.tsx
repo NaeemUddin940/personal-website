@@ -1,4 +1,4 @@
-import { Activity, ArrowUpRight, TrendingUp } from "lucide-react";
+import { ArrowUpRight, TrendingUp } from "lucide-react";
 import { useState } from "react";
 
 export const StatsCardPremium = ({
@@ -33,22 +33,6 @@ export const StatsCardPremium = ({
           <h3 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80">
             {title}
           </h3>
-
-          <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 backdrop-blur-md">
-            {ranges.map((range) => (
-              <button
-                key={range}
-                onClick={() => setTimeRange(range)}
-                className={`px-2.5 py-1 rounded-lg cursor-pointer text-[9px] font-black uppercase transition-all ${
-                  timeRange === range
-                    ? "bg-primary text-primary-foreground shadow-lg"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {range}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="flex gap-4 relative z-20">
@@ -89,10 +73,21 @@ export const StatsCardPremium = ({
 
         {/* Bottom Footer Area */}
         <div className="mt-6 pt-3 border-t border-white/5 flex items-center justify-between relative z-20">
-          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1 font-medium">
-            <Activity size={12} className="opacity-50" />
-            {subtext}
-          </span>
+          <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 backdrop-blur-md">
+            {ranges.map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-2.5 py-1 rounded-lg cursor-pointer text-[9px] font-black uppercase transition-all ${
+                  timeRange === range
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
           <button className="text-[10px] cursor-pointer font-bold text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors">
             Details <ArrowUpRight size={10} />
           </button>

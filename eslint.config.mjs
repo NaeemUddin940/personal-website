@@ -10,6 +10,9 @@ const eslintConfig = defineConfig([
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "react-hooks/set-state-in-effect": "off",
+      // "@typescript-eslint/explicit-function-return-type": "warn",
+      "@typescript-eslint/no-inferrable-types": "off",
+      // "@typescript-eslint/explicit-module-boundary-types": "error",
     },
   },
   globalIgnores([

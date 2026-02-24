@@ -1,4 +1,10 @@
-export const validateSchema = (schema: any, data: FormData) => {
+import { ReturnType } from "@/@types/return-type";
+import { ZodSchema } from "zod";
+
+export const validateSchema = <T>(
+  schema: ZodSchema,
+  data: FormData,
+): ReturnType => {
   const rawData = Object.fromEntries(data);
   const result = schema.safeParse(rawData);
 
@@ -13,5 +19,5 @@ export const validateSchema = (schema: any, data: FormData) => {
     };
   }
 
-  return { success: true, data: result.data };
+  return { success: true, data: result.data as T };
 };

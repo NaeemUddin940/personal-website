@@ -45,5 +45,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // আপনার matcher অবশ্যই ফোল্ডার স্ট্রাকচারের সাথে মিলতে হবে
-  matcher: ["/auth/sign-in", "/auth/sign-up", "/admin/dashboard"],
+  matcher: ["/auth/sign-in", "/auth/sign-up", "/admin"],
 };

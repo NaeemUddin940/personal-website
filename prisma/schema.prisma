@@ -36,7 +36,7 @@ model User {
   isBlocked             Boolean   @default(false)
   isDeleted             Boolean   @default(false)
 
-// Security
+  // Security
   failedLoginAttempts   Int       @default(0)
   accountLockedUntil    DateTime?
   lastLoginAt           DateTime?
@@ -107,7 +107,6 @@ model ShippingAddress {
   // টেবিলের নাম
   @@map("shipping_addresses")
 }
-
 
 model Session {
   id        String   @id

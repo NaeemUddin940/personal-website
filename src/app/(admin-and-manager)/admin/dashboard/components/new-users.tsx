@@ -32,12 +32,20 @@ const newUsers = [
     email: "ishraq@dev.io",
     initials: "IA",
     joined: "2 days ago",
-  },{
+  },
+  {
     name: "Ishraq Ali",
     email: "ishraq@dev.io",
     initials: "IA",
     joined: "2 days ago",
-  },{
+  },
+  {
+    name: "Ishraq Ali",
+    email: "ishraq@dev.io",
+    initials: "IA",
+    joined: "2 days ago",
+  },
+  {
     name: "Ishraq Ali",
     email: "ishraq@dev.io",
     initials: "IA",

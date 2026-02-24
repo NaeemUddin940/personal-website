@@ -1,10 +1,13 @@
-"use server"
+"use server";
+import { ReturnType } from "@/@types/return-type";
 import { AUTH_ERROR_RESPONSE } from "@/constant/error/auth-error-response";
 import { AUTH_SUCCESS_RESPONSE } from "@/constant/success/auth-success-response";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export const sentPasswordResetEmail = async (email) => {
+export const sentPasswordResetEmail = async (
+  email: string,
+): Promise<ReturnType> => {
   try {
     const isUserExist = await prisma.user.findFirst({
       where: { email },
@@ -22,7 +25,7 @@ export const sentPasswordResetEmail = async (email) => {
     });
 
     return AUTH_SUCCESS_RESPONSE.SEND_PASSWORD_RESET;
-  } catch (error: any) {
+  } catch (error) {
     console.log(AUTH_ERROR_RESPONSE.SEND_PASSWORD_RESET_FAILED.message, error);
     return AUTH_ERROR_RESPONSE.SEND_PASSWORD_RESET_FAILED;
   }

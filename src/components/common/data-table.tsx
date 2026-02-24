@@ -1,8 +1,9 @@
+"use client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  Activity,
   ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
+  ChevronDown,
   ChevronsLeft,
   ChevronsRight,
   Download,
@@ -13,52 +14,100 @@ import {
   RefreshCw,
   Search,
   Settings,
-  Trash,
   Trash2,
   X,
 } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverItem,
+  PopoverTrigger,
+} from "../ui/popover";
 import { Option, Select } from "../ui/select";
+import Input from "./input";
 
-// --- Interfaces ---
-interface Column<T> {
-  header: string;
-  accessor: keyof T;
-  sortable?: boolean;
-  visible?: boolean;
-  render?: (value: any, item: T) => React.ReactNode;
+/**
+ * --- UTILITY: CLICK OUTSIDE HOOK ---
+ */
+function useOnClickOutside(ref, handler) {
+  useEffect(() => {
+    const listener = (event) => {
+      if (!ref.current || ref.current.contains(event.target)) return;
+      handler(event);
+    };
+    document.addEventListener("mousedown", listener);
+    return () => document.removeEventListener("mousedown", listener);
+  }, [ref, handler]);
 }
 
-interface FetchParams {
-  page: number;
-  limit: number;
-  search: string;
-  sort: string;
-  order: "asc" | "desc";
-  columnFilters: Record<string, string>;
-}
+/**
+ * --- COMPONENT: DROPDOWN ACTION MENU ---
+ */
+const ActionMenu = ({ item, onView, onEdit, onDelete }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef();
+  useOnClickOutside(ref, () => setIsOpen(false));
 
-interface FetchResponse<T> {
-  data: T[];
-  total: number;
-}
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-2 hover:bg-muted cursor-pointer rounded-full transition-colors text-muted-foreground"
+      >
+        <MoreVertical size={18} />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: -10 }}
+            className="absolute right-0 mt-2 w-44 bg-popover border border-border rounded-2xl shadow-xl z-100 overflow-hidden"
+          >
+            <div className="flex flex-col p-1.5">
+              <button
+                onClick={() => {
+                  onView(item);
+                  setIsOpen(false);
+                }}
+                className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold hover:bg-muted rounded-xl transition-colors"
+              >
+                <Eye size={14} className="text-blue-500" /> View Details
+              </button>
+              <button
+                onClick={() => {
+                  onEdit(item);
+                  setIsOpen(false);
+                }}
+                className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold hover:bg-muted rounded-xl transition-colors"
+              >
+                <Edit2 size={14} className="text-amber-500" /> Edit Record
+              </button>
+              <hr className="my-1 border-border/50" />
+              <button
+                onClick={() => {
+                  onDelete(item);
+                  setIsOpen(false);
+                }}
+                className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold hover:bg-rose-500/10 text-rose-500 rounded-xl transition-colors"
+              >
+                <Trash2 size={14} /> Delete
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
-interface DataTableProps<T> {
-  columns: Column<T>[];
-  fetchData: (params: FetchParams) => Promise<FetchResponse<T>>;
-  initialItemsPerPage?: number;
-  title?: string;
-  description?: string;
-  onView?: (item: T) => void;
-  onEdit?: (item: T) => void;
-  onDelete?: (item: T) => void;
-  onBulkDelete?: (ids: (string | number)[]) => void;
-  refreshKey?: number;
-}
-
-// --- Reusable DataTable Component ---
-export function DataTable<T extends { id: string | number }>({
+/**
+ * --- COMPONENT: DATA TABLE ---
+ */
+export const DataTable = ({
   columns: initialColumns,
   fetchData,
   initialItemsPerPage = 5,
@@ -68,46 +117,35 @@ export function DataTable<T extends { id: string | number }>({
   onEdit,
   onDelete,
   onBulkDelete,
-  refreshKey = 0,
-}: DataTableProps<T>) {
-  const [data, setData] = useState<T[]>([]);
+  refreshTrigger = 0,
+  setRefreshTrigger,
+  expandableContent,
+  maxHeight = "85vh",
+}) => {
+  const [data, setData] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof T;
-    direction: "asc" | "desc";
-  } | null>(null);
+  const [columnFilters, setColumnFilters] = useState({});
+  const [debouncedColumnFilters, setDebouncedColumnFilters] = useState({});
+  const [sortConfig, setSortConfig] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
-  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
-    new Set(),
-  );
-
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [expandedRows, setExpandedRows] = useState(new Set());
   const [cols, setCols] = useState(initialColumns);
   const [showSettings, setShowSettings] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>(
-    {},
-  );
-  const [activeDropdown, setActiveDropdown] = useState<string | number | null>(
-    null,
-  );
-  const [isSearchOpenMobile, setIsSearchOpenMobile] = useState(false);
+  const settingsRef = useRef();
+
+  useOnClickOutside(settingsRef, () => setShowSettings(false));
 
   const totalPages = Math.ceil(totalRecords / itemsPerPage);
   const activeColumns = cols.filter((c) => c.visible);
+  const isExpandable = typeof expandableContent === "function";
 
-  const getPaginationGroup = useCallback(() => {
-    let start = Math.max(currentPage - 2, 1);
-    const end = Math.min(start + 4, totalPages);
-    if (end - start < 4) start = Math.max(end - 4, 1);
-    const pages = [];
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  }, [currentPage, totalPages]);
-
+  // Search Debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -116,22 +154,32 @@ export function DataTable<T extends { id: string | number }>({
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Column Filters Debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedColumnFilters(columnFilters);
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [columnFilters]);
+
   const loadData = useCallback(async () => {
     setIsLoading(true);
+    const params = {
+      page: currentPage,
+      limit: itemsPerPage,
+      search: debouncedSearch,
+      columnFilters: debouncedColumnFilters,
+      sortBy: sortConfig?.key || "",
+      sortOrder: sortConfig?.direction || "asc",
+    };
+
     try {
-      const params: FetchParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: debouncedSearch,
-        sort: sortConfig ? String(sortConfig.key) : "",
-        order: sortConfig ? sortConfig.direction : "asc",
-        columnFilters,
-      };
       const response = await fetchData(params);
       setData(response.data);
       setTotalRecords(response.total);
     } catch (err) {
-      console.error(err);
+      console.error("❌ API ERROR:", err);
     } finally {
       setIsLoading(false);
     }
@@ -139,466 +187,481 @@ export function DataTable<T extends { id: string | number }>({
     currentPage,
     itemsPerPage,
     debouncedSearch,
+    debouncedColumnFilters,
     sortConfig,
-    columnFilters,
     fetchData,
   ]);
 
   useEffect(() => {
     loadData();
-  }, [loadData, refreshKey]);
+  }, [loadData]);
 
-  // UI interaction handles
-  const handleExportCSV = () => {
+  const handleExport = () => {
+    if (data.length === 0) return;
     const headers = activeColumns.map((c) => c.header).join(",");
-    const rows = data
-      .map((item) =>
-        activeColumns.map((c) => `"${String(item[c.accessor])}"`).join(","),
-      )
-      .join("\n");
-    const blob = new Blob([`${headers}\n${rows}`], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `export-${Date.now()}.csv`;
-    a.click();
-    setShowSettings(false);
+    const rows = data.map((item) =>
+      activeColumns
+        .map((c) => `"${String(item[c.accessor]).replace(/"/g, '""')}"`)
+        .join(","),
+    );
+    const csvContent =
+      "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${title.replace(/\s+/g, "_")}_export.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  const handleSort = (key: keyof T) => {
-    let direction: "asc" | "desc" = "asc";
-    if (sortConfig?.key === key && sortConfig.direction === "asc")
-      direction = "desc";
-    setSortConfig({ key, direction });
-    setCurrentPage(1);
+  const handleColumnFilterChange = (accessor, value) => {
+    setColumnFilters((prev) => ({
+      ...prev,
+      [accessor]: value,
+    }));
   };
 
-  const showingFrom =
-    totalRecords === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
-  const showingTo = Math.min(currentPage * itemsPerPage, totalRecords);
+  const toggleColumn = (accessor) => {
+    setCols((prev) =>
+      prev.map((col) =>
+        col.accessor === accessor ? { ...col, visible: !col.visible } : col,
+      ),
+    );
+  };
+
+  const toggleExpand = (id) => {
+    const next = new Set(expandedRows);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setExpandedRows(next);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRows.size === data.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(data.map((i) => i.id)));
+    }
+  };
+
+  const toggleSelectRow = (id) => {
+    const next = new Set(selectedRows);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setSelectedRows(next);
+  };
 
   return (
-    <div className="bg-card rounded-3xl shadow-2xl border border-border overflow-hidden flex flex-col font-sans">
-      {/* Table Header / Toolbar */}
-      <div className="p-6 border-b bg-secondary/40 border-border">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div>
-              <h2 className="hidden md:block text-xl font-black text-foreground uppercase tracking-tight">
-                {title}
-              </h2>
-              <p className="text-secondary-foreground/50">{description}</p>
-            </div>
-            <div
-              className={`relative transition-all duration-300 ${isSearchOpenMobile ? "w-full" : "w-10 md:w-64"}`}
-            >
-              <button
-                onClick={() => setIsSearchOpenMobile(!isSearchOpenMobile)}
-                className="md:hidden p-2.5 rounded-xl bg-muted text-muted-foreground"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-              <div
-                className={`${isSearchOpenMobile ? "absolute top-0 left-0 w-full z-10" : "hidden md:block"}`}
-              >
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
-                <input
+    <div
+      style={{ maxHeight: maxHeight }}
+      className="bg-card rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col font-sans transition-all w-full h-fit"
+    >
+      {/* HEADER / TOOLBAR */}
+      <div className="p-8 border-b bg-secondary/10 shrink-0">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight flex items-center gap-3">
+              {title}
+            </h2>
+            <p className="text-[11px] text-muted-foreground font-black uppercase tracking-widest opacity-60 italic">
+              {description}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full md:w-80 flex items-center gap-2">
+              <div className="relative grow group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 w-4 h-4 group-focus-within:text-primary transition-colors" />
+                <Input
                   type="text"
-                  placeholder="Search..."
-                  className="w-full pl-10 pr-10 py-2.5 bg-input border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  placeholder="Global search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                {(searchTerm || isSearchOpenMobile) && (
+                {searchTerm && (
                   <button
-                    onClick={() => {
-                      setSearchTerm("");
-                      if (isSearchOpenMobile) setIsSearchOpenMobile(false);
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-2 cursor-pointer hover:bg-red-500/10 p-1 rounded-2xl top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-rose-500"
                   >
-                    <X className="w-4 h-4" />
+                    <X size={16} />
                   </button>
                 )}
               </div>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2 justify-end">
-            {/* Delete Button with COUNT */}
+              {/* FILTER TOGGLE BUTTON */}
+              <Button
+                size="sm"
+                variant="soft"
+                className="w-10 h-10"
+                onClick={() => setShowFilters(!showFilters)}
+                // className={`p-3.5 rounded-2xl cursor-pointer border transition-all ${showFilters ? "bg-primary text-white shadow-lg" : "bg-card border-border text-muted-foreground hover:bg-muted"}`}
+              >
+                <Filter size={20} />
+              </Button>
+            </div>
+
             <AnimatePresence>
               {selectedRows.size > 0 && (
                 <motion.button
-                  initial={{ opacity: 0, x: 20, scale: 0.9 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 20, scale: 0.9 }}
-                  onClick={() => {
-                    onBulkDelete?.(Array.from(selectedRows));
-                    setSelectedRows(new Set());
-                  }}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-destructive text-destructive-foreground rounded-xl shadow-lg shadow-destructive/20 text-xs font-black transition-transform active:scale-95"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  onClick={() => onBulkDelete(Array.from(selectedRows))}
+                  className="flex items-center gap-2 px-6 py-3.5 bg-rose-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-500/20 hover:bg-rose-600 active:scale-95 transition-all"
                 >
-                  <Trash className="w-4 h-4" />
-                  <span>Delete ({selectedRows.size})</span>
+                  <Trash2 size={16} /> Delete Selected ({selectedRows.size})
                 </motion.button>
               )}
             </AnimatePresence>
 
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`p-2.5 rounded-xl border transition-all ${showFilters ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground"}`}
-              title="Toggle Filters"
-            >
-              <Filter className="w-4 h-4" />
-            </button>
-            <div className="relative">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className={`p-2.5 rounded-xl border transition-all ${showSettings ? "bg-accent text-accent-foreground" : "bg-card border-border text-muted-foreground"}`}
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-              <AnimatePresence>
-                {showSettings && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowSettings(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 mt-2 w-64 bg-popover border border-border rounded-2xl shadow-2xl p-4 z-50 space-y-4 text-popover-foreground"
-                    >
-                      <div>
-                        <h4 className="text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">
-                          Options
-                        </h4>
-                        <button
+            <div className="relative" ref={settingsRef}>
+              <Popover>
+                <PopoverTrigger className="p-2">
+                  <Button size="sm">
+                    <Settings size={22} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent animationType="bounce" align="right">
+                  <div className="space-y-6 p-3">
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50 mb-3">
+                        Table Tools
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
                           onClick={() => {
-                            loadData();
+                            setRefreshTrigger((p) => p + 1);
                             setShowSettings(false);
                           }}
-                          className="w-full flex items-center gap-3 p-2 hover:bg-accent hover:text-accent-foreground rounded-lg text-sm transition-colors"
+                          icon={<RefreshCw size={14} />}
+                          size="sm"
+                          className="py-2"
                         >
-                          <RefreshCw className="w-4 h-4" /> Refresh Data
-                        </button>
-                        <button
-                          onClick={handleExportCSV}
-                          className="w-full flex items-center gap-3 p-2 hover:bg-accent hover:text-accent-foreground rounded-lg text-sm transition-colors"
+                          Refresh
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            handleExport();
+                            setShowSettings(false);
+                          }}
+                          icon={<Download size={14} />}
+                          size="sm"
+                          className="py-2"
                         >
-                          <Download className="w-4 h-4" /> Export CSV
-                        </button>
+                          Export
+                        </Button>
                       </div>
-                      <div className="pt-2 border-t border-border">
-                        <h4 className="text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">
-                          Columns
-                        </h4>
-                        <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
-                          {cols.map((c) => (
-                            <label
-                              key={String(c.accessor)}
-                              className="flex items-center justify-between p-2 hover:bg-accent hover:text-accent-foreground rounded-lg cursor-pointer transition-colors"
-                            >
-                              <span className="text-xs font-bold">
-                                {c.header}
-                              </span>
-                              <input
-                                type="checkbox"
-                                checked={c.visible}
-                                onChange={() =>
-                                  setCols((prev) =>
-                                    prev.map((col) =>
-                                      col.accessor === c.accessor
-                                        ? { ...col, visible: !col.visible }
-                                        : col,
-                                    ),
-                                  )
-                                }
+                    </div>
+
+                    <div className="pt-2 border-t border-border">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50 mb-4">
+                        Display Columns
+                      </h4>
+                      <div className="space-y-2 h-50 overflow-y-auto custom-scrollbar pr-2">
+                        {cols.map((col) => (
+                          <PopoverItem
+                            key={String(col.accessor)}
+                            className=" cursor-pointer group"
+                          >
+                            <label className="text-md flex items-center w-full cursor-pointer justify-between font-bold text-foreground group-hover:text-primary transition-colors">
+                              <div>{col.header}</div>
+                              <Checkbox
+                                checked={col.visible}
+                                onChange={() => toggleColumn(col.accessor)}
                                 className="w-4 h-4 accent-primary rounded cursor-pointer"
                               />
                             </label>
-                          ))}
-                        </div>
+                          </PopoverItem>
+                        ))}
                       </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Table Area with Fixed/Sticky Header */}
-      <div className="overflow-x-auto relative scrollbar-thin scrollbar-thumb-border max-h-150">
+      {/* TABLE CONTAINER */}
+      <div className="grow overflow-y-auto overflow-x-auto relative custom-scrollbar bg-card">
         <table className="w-full text-left border-separate border-spacing-0">
-          <thead className="sticky top-0 z-20 bg-card">
-            <tr>
-              <th className="p-5 w-16 text-center border-b border-border bg-card">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-secondary backdrop-blur-md">
+              <th className="p-6 w-16 border-b border-border text-center">
                 <Checkbox
                   checked={data.length > 0 && selectedRows.size === data.length}
-                  onChange={() => {
-                    if (selectedRows.size === data.length)
-                      setSelectedRows(new Set());
-                    else setSelectedRows(new Set(data.map((i) => i.id)));
-                  }}
+                  onChange={toggleSelectAll}
                 />
               </th>
-
+              {isExpandable && (
+                <th className="p-6 w-16 border-b border-border"></th>
+              )}
               {activeColumns.map((col) => (
                 <th
                   key={String(col.accessor)}
-                  className="p-5 border-b border-border bg-card"
+                  className="p-6 border-b border-border"
                 >
-                  <div className="space-y-3">
-                    <div
-                      className={`flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest cursor-pointer hover:text-primary transition-colors ${
-                        col.sortable ? "" : "pointer-events-none"
-                      }`}
-                      onClick={() => col.sortable && handleSort(col.accessor)}
-                    >
-                      {col.header}
-                      {col.sortable && (
-                        <ArrowUpDown
-                          className={`w-3 h-3 ${
-                            sortConfig?.key === col.accessor
-                              ? "text-primary"
-                              : "opacity-20"
-                          }`}
-                        />
-                      )}
-                    </div>
-                    {/* Smoothly Collapsed Column Filters */}
-                    <AnimatePresence initial={false}>
-                      {showFilters && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                          animate={{ height: "auto", opacity: 1, marginTop: 8 }}
-                          exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <input
-                            placeholder={
-                              col?.header
-                                ? `${col.header} Filter...`
-                                : "Filter...."
-                            }
-                            className="w-full px-3 py-1.5 text-[11px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-semibold"
-                            value={columnFilters[String(col.accessor)] || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setColumnFilters((prev) => ({
-                                ...prev,
-                                [String(col.accessor)]: val,
-                              }));
-                              setCurrentPage(1);
-                            }}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  <button
+                    disabled={!col.sortable}
+                    onClick={() => {
+                      const dir =
+                        sortConfig?.direction === "asc" ? "desc" : "asc";
+                      setSortConfig({ key: col.accessor, direction: dir });
+                    }}
+                    className={`flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest transition-colors ${col.sortable ? "hover:text-primary cursor-pointer" : "cursor-default "}`}
+                  >
+                    {col.header}
+                    {col.sortable && (
+                      <ArrowUpDown
+                        size={14}
+                        className={
+                          sortConfig?.key === col.accessor
+                            ? "text-primary cursor-pointer"
+                            : "opacity-100 cursor-pointer"
+                        }
+                      />
+                    )}
+                  </button>
                 </th>
               ))}
-
-              <th className="p-5 border-b border-border text-right text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-card">
+              <th className="p-6 border-b border-border text-right text-[11px] font-black text-muted-foreground uppercase tracking-widest">
                 Actions
               </th>
             </tr>
           </thead>
-
-          <tbody>
-            {isLoading
-              ? Array.from({ length: 8 }).map((_, index) => (
-                  <tr
-                    key={index}
-                    className={`${
-                      index % 2 === 0 ? "bg-muted/40" : "bg-background"
-                    }`}
+          <tbody className="divide-y divide-border/40">
+            {/* COLLAPSIBLE FILTER ROW AS FIRST TBODY ROW */}
+            <AnimatePresence>
+              {showFilters && (
+                <tr className="bg-secondary/40">
+                  <td
+                    colSpan={activeColumns.length + (isExpandable ? 3 : 2)}
+                    className="border-b border-border/50"
                   >
-                    <td
-                      colSpan={activeColumns.length + 2}
-                      className="p-5 animate-pulse"
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
                     >
-                      <div className="h-10 bg-muted rounded-2xl" />
-                    </td>
-                  </tr>
-                ))
-              : data.map((item, index) => {
-                  const isSelected = selectedRows.has(item.id);
+                      <div className="flex items-center gap-0 w-full px-6 py-4">
+                        {/* Empty spacing for checkbox column */}
+                        <div className="w-16 shrink-0"></div>
+                        {/* Empty spacing for expand column if applicable */}
+                        {isExpandable && <div className="w-16 shrink-0"></div>}
 
-                  return (
+                        <div className="grow grid grid-flow-col auto-cols-fr gap-4 pr-20">
+                          {activeColumns.map((col) => (
+                            <div
+                              key={`filter-${String(col.accessor)}`}
+                              className="relative"
+                            >
+                              <Input
+                                placeholder={`Filter ${col.header}...`}
+                                value={columnFilters[col.accessor] || ""}
+                                onChange={(e) =>
+                                  handleColumnFilterChange(
+                                    col.accessor,
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                              {columnFilters[col.accessor] && (
+                                <button
+                                  onClick={() =>
+                                    handleColumnFilterChange(col.accessor, "")
+                                  }
+                                  className="absolute right-2 cursor-pointer hover:bg-red-500/10 p-1 rounded-2xl top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-rose-500"
+                                >
+                                  <X size={16} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {/* Spacing for actions column */}
+                        <div className="w-20 shrink-0"></div>
+                      </div>
+                    </motion.div>
+                  </td>
+                </tr>
+              )}
+            </AnimatePresence>
+
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  <td
+                    colSpan={activeColumns.length + (isExpandable ? 3 : 2)}
+                    className="p-6"
+                  >
+                    <div className="h-10 bg-muted animate-pulse rounded-2xl" />
+                  </td>
+                </tr>
+              ))
+            ) : data.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={activeColumns.length + (isExpandable ? 3 : 2)}
+                  className="p-10 text-center text-muted-foreground font-black uppercase tracking-[0.3em] opacity-30 italic"
+                >
+                  No records found
+                </td>
+              </tr>
+            ) : (
+              data.map((item) => {
+                const isExpanded = expandedRows.has(item.id);
+                return (
+                  <React.Fragment key={item.id}>
                     <tr
-                      key={item.id}
-                      className={`
-                group transition-colors
-                ${
-                  isSelected
-                    ? "bg-primary/10"
-                    : index % 2 === 0
-                      ? "bg-muted/40"
-                      : "bg-accent"
-                }
-                hover:bg-secondary
-              `}
+                      className={`group hover:bg-secondary/30 transition-all ${isExpanded ? "bg-primary/5" : selectedRows.has(item.id) ? "bg-primary/5" : ""}`}
                     >
-                      {/* Checkbox */}
-                      <td className="p-5 text-center border-b border-border">
+                      <td className="px-6 text-center border-b border-border/20">
                         <Checkbox
-                          checked={isSelected}
-                          id={item.id}
-                          onChange={() => {
-                            const next = new Set(selectedRows);
-                            if (next.has(item.id)) next.delete(item.id);
-                            else next.add(item.id);
-                            setSelectedRows(next);
-                          }}
+                          checked={selectedRows.has(item.id)}
+                          onChange={() => toggleSelectRow(item.id)}
+                          className="w-5 h-5 accent-primary rounded-lg cursor-pointer"
                         />
                       </td>
-
-                      {/* Columns */}
+                      {isExpandable && (
+                        <td className="text-center border-b border-border/20">
+                          <button
+                            onClick={() => toggleExpand(item.id)}
+                            className={`p-2.5 rounded-xl transition-all shadow-sm ${isExpanded ? "bg-primary text-white shadow-primary/20" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+                          >
+                            <ChevronDown
+                              size={18}
+                              className={`transition-transform duration-500 ${isExpanded ? "rotate-180" : ""}`}
+                            />
+                          </button>
+                        </td>
+                      )}
                       {activeColumns.map((col) => (
                         <td
                           key={String(col.accessor)}
-                          className="px-5 text-sm font-semibold text-foreground border-b border-border"
+                          className="border-b border-border/20 whitespace-nowrap"
                         >
-                          {col.render
-                            ? col.render(item[col.accessor], item)
-                            : String(item[col.accessor])}
+                          {col.render ? (
+                            col.render(item[col.accessor], item)
+                          ) : (
+                            <span className="text-sm font-bold text-foreground/80">
+                              {String(item[col.accessor])}
+                            </span>
+                          )}
                         </td>
                       ))}
-
-                      {/* Actions */}
-                      <td className="p-5 text-right border-b border-border relative">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => onView?.(item)}
-                            className="p-2 hover:bg-primary/10 rounded-lg text-muted-foreground hover:text-primary transition-colors"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <div className="relative">
-                            <button
-                              onClick={() =>
-                                setActiveDropdown(
-                                  activeDropdown === item.id ? null : item.id,
-                                )
-                              }
-                              className={`p-2 rounded-lg transition-colors ${activeDropdown === item.id ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent"}`}
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-                            <AnimatePresence>
-                              {activeDropdown === item.id && (
-                                <>
-                                  <div
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setActiveDropdown(null)}
-                                  />
-                                  <motion.div
-                                    initial={{ opacity: 0, scale: 0.9, x: -10 }}
-                                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                                    exit={{ opacity: 0, scale: 0.9, x: -10 }}
-                                    className="absolute right-full mr-2 top-0 w-36 bg-popover border border-border rounded-xl shadow-xl z-50 overflow-hidden text-popover-foreground"
-                                  >
-                                    <button
-                                      onClick={() => {
-                                        onEdit?.(item);
-                                        setActiveDropdown(null);
-                                      }}
-                                      className="w-full flex items-center gap-2.5 p-3 text-xs font-bold hover:bg-accent border-b border-border transition-colors"
-                                    >
-                                      <Edit2 className="w-3.5 h-3.5 text-primary" />{" "}
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        onDelete?.(item);
-                                        setActiveDropdown(null);
-                                      }}
-                                      className="w-full flex items-center gap-2.5 p-3 text-xs font-bold text-destructive hover:bg-destructive/10 transition-colors"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" /> Delete
-                                    </button>
-                                  </motion.div>
-                                </>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        </div>
+                      <td className="p-6  text-right border-b border-border/20">
+                        <ActionMenu
+                          item={item}
+                          onView={onView}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
+                        />
                       </td>
                     </tr>
-                  );
-                })}
+                    <AnimatePresence>
+                      {isExpandable && isExpanded && (
+                        <tr>
+                          <td
+                            colSpan={activeColumns.length + 3}
+                            className="p-0 border-b border-border/20"
+                          >
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{
+                                duration: 0.5,
+                                ease: [0.22, 1, 0.36, 1],
+                              }}
+                            >
+                              <div className="p-10 bg-linear-to-br from-secondary/50 to-background">
+                                {expandableContent(item)}
+                              </div>
+                            </motion.div>
+                          </td>
+                        </tr>
+                      )}
+                    </AnimatePresence>
+                  </React.Fragment>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination Footer */}
-      <div className="p-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6 bg-muted/30">
-        <div className="text-[11px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-4">
-          <p>
-            Showing {showingFrom} - {showingTo} / {totalRecords}
-          </p>
-          <div className="h-4 w-px bg-border" />
-          <div className="flex items-center gap-2">
-            <span>Per Page:</span>
-            <Select side="top" value={itemsPerPage} onChange={setItemsPerPage}>
-              {[5, 10, 25, 50, 100].map((s) => (
-                <Option key={s} value={s}>
-                  {s}
+      {/* FOOTER */}
+      <div className="p-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-8 bg-secondary/5 shrink-0">
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-3">
+            <Activity size={16} className="text-primary" />
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+            {Math.min(currentPage * itemsPerPage, totalRecords)} of{" "}
+            {totalRecords}
+          </div>
+
+          <div className="flex items-center gap-3 ">
+            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">
+              Rows Per Page:
+            </span>
+            <Select
+              value={itemsPerPage}
+              side="top"
+              onChange={setItemsPerPage}
+              className="text-xs font-black outline-none bg-transparent cursor-pointer"
+            >
+              {[5, 10, 20, 50, 100].map((val) => (
+                <Option key={val} value={val}>
+                  {val}
                 </Option>
               ))}
             </Select>
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button
+        <div className="flex items-center gap-2">
+          <Button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(1)}
-            className="p-2 rounded-lg border border-border disabled:opacity-20 hover:bg-accent transition-all text-muted-foreground"
+            size="sm"
+            variant="overlay"
           >
-            <ChevronsLeft className="w-4 h-4" />
-          </button>
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-            className="p-2 rounded-lg border border-border disabled:opacity-20 hover:bg-accent transition-all text-muted-foreground"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
+            <ChevronsLeft size={20} />
+          </Button>
 
-          <div className="flex gap-1 mx-2">
-            {getPaginationGroup().map((p) => (
-              <button
-                key={p}
-                onClick={() => setCurrentPage(p)}
-                className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === p ? "bg-primary text-primary-foreground shadow-lg scale-110" : "text-muted-foreground hover:bg-accent"}`}
+          <div className="flex gap-2 mx-4">
+            {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => (
+              <Button
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                size="sm"
+                variant="glass"
+                className="h-9 w-9"
+                // className={`min-w-11 h-11 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${currentPage === i + 1 ? "bg-primary text-white shadow-lg shadow-primary/30 scale-110" : "bg-card border border-border hover:bg-muted text-muted-foreground"}`}
               >
-                {p}
-              </button>
+                {i + 1}
+              </Button>
             ))}
           </div>
 
-          <button
-            disabled={currentPage >= totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-            className="p-2 rounded-lg border border-border disabled:opacity-20 hover:bg-accent transition-all text-muted-foreground"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-          <button
-            disabled={currentPage >= totalPages}
+          <Button
+            disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(totalPages)}
-            className="p-2 rounded-lg border border-border disabled:opacity-20 hover:bg-accent transition-all text-muted-foreground"
+            size="sm"
+            variant="overlay"
           >
-            <ChevronsRight className="w-4 h-4" />
-          </button>
+            <ChevronsRight size={20} />
+          </Button>
         </div>
       </div>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+      `}</style>
     </div>
   );
-}
+};

@@ -1,4 +1,5 @@
 import { DataTable } from "@/components/common/data-table";
+import { Calendar, TrendingUp } from "lucide-react";
 import Image from "next/image";
 
 export default function TopProducts() {
@@ -178,6 +179,62 @@ export default function TopProducts() {
         onView={(u) => alert(`Viewing: ${u.name}`)}
         onEdit={(u) => alert(`Editing: ${u.name}`)}
         onDelete={(u) => alert(`Deleting: ${u.name}`)}
+        // expandableContent={(item) => (
+        //   <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        //     <div className="md:col-span-2 space-y-6">
+        //       <div className="space-y-2">
+        //         <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+        //           Master Description
+        //         </h4>
+        //         <p className="text-sm font-medium text-slate-600 leading-relaxed">
+        //           {item.description}
+        //         </p>
+        //       </div>
+        //       <div className="grid grid-cols-2 gap-4">
+        //         <div className="bg-white p-5 rounded-3xl border border-border shadow-sm">
+        //           <h5 className="text-[9px] font-black text-muted-foreground uppercase mb-3">
+        //             Core Features
+        //           </h5>
+        //           <div className="flex flex-wrap gap-2">
+        //             {/* {item.map((f) => (
+        //               <span
+        //                 key={f}
+        //                 className="text-[10px] font-bold px-3 py-1 bg-secondary rounded-lg border border-border"
+        //               >
+        //                 {f}
+        //               </span>
+        //             ))} */}
+        //           </div>
+        //         </div>
+        //         <div className="bg-white p-5 rounded-3xl border border-border shadow-sm flex items-center justify-between">
+        //           <div>
+        //             <h5 className="text-[9px] font-black text-muted-foreground uppercase mb-1">
+        //               Created At
+        //             </h5>
+        //             <p className="text-xs font-black">{item.createdAt}</p>
+        //           </div>
+        //           <Calendar className="text-primary/20 w-8 h-8" />
+        //         </div>
+        //       </div>
+        //     </div>
+        //     <div className="bg-primary p-8 rounded-[2rem] text-white shadow-2xl shadow-primary/30 space-y-4">
+        //       <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+        //         <TrendingUp className="w-6 h-6" />
+        //       </div>
+        //       <h4 className="text-xl font-black">Performance</h4>
+        //       <p className="text-xs font-bold text-white/70">
+        //         This product is currently performing{" "}
+        //         <span className="text-white underline decoration-2 font-black">
+        //           better than 85%
+        //         </span>{" "}
+        //         of your inventory in the {item.category} segment.
+        //       </p>
+        //       <button className="w-full py-3 bg-white text-primary rounded-xl text-[10px] font-black uppercase tracking-widest mt-4">
+        //         View Full Analytics
+        //       </button>
+        //     </div>
+        //   </div>
+        // )}
       />
     </div>
   );

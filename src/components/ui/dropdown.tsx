@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
@@ -120,7 +121,10 @@ const DropdownTrigger: FC<DropdownTriggerProps> = ({
 
   return (
     <div
-      className={`cursor-pointer active:scale-95 px-2 py-1 rounded-xl transition-all text-card-foreground duration-300 flex items-center gap-2 select-none border border-border bg-card shadow-sm ${className}`}
+      className={cn(
+        "cursor-pointer active:scale-95 px-2 py-1 rounded-xl transition-all text-card-foreground duration-300 flex items-center gap-2 select-none border border-border bg-card shadow-sm",
+        className,
+      )}
       onClick={() => triggerMode === "click" && setIsOpen(!isOpen)}
     >
       {children}
@@ -316,37 +320,71 @@ const DropdownItem: FC<DropdownItemProps> = ({
   };
 
   return (
-    <Link href={link}>
-      <motion.div
-        variants={itemAnims}
-        onClick={handleItemClick}
-        className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 group hover:bg-muted text-muted-foreground hover:text-primary ${className}`}
-      >
-        {children ? (
-          children
-        ) : (
-          <>
-            {icon && (
-              <div className="text-current opacity-70 group-hover:opacity-100">
-                {icon}
-              </div>
+    <>
+      {link ? (
+        <Link href={link}>
+          <motion.div
+            variants={itemAnims}
+            onClick={handleItemClick}
+            className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 group hover:bg-muted text-muted-foreground hover:text-primary ${className}`}
+          >
+            {children ? (
+              children
+            ) : (
+              <>
+                {icon && (
+                  <div className="text-current opacity-70 group-hover:opacity-100">
+                    {icon}
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  {title && (
+                    <span className="text-sm font-semibold leading-tight">
+                      {title}
+                    </span>
+                  )}
+                  {label && (
+                    <span className="text-[10px] opacity-50 font-medium mt-0.5">
+                      {label}
+                    </span>
+                  )}
+                </div>
+              </>
             )}
-            <div className="flex flex-col">
-              {title && (
-                <span className="text-sm font-semibold leading-tight">
-                  {title}
-                </span>
+          </motion.div>
+        </Link>
+      ) : (
+        <motion.div
+          variants={itemAnims}
+          onClick={handleItemClick}
+          className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 group hover:bg-muted text-muted-foreground hover:text-primary ${className}`}
+        >
+          {children ? (
+            children
+          ) : (
+            <>
+              {icon && (
+                <div className="text-current opacity-70 group-hover:opacity-100">
+                  {icon}
+                </div>
               )}
-              {label && (
-                <span className="text-[10px] opacity-50 font-medium mt-0.5">
-                  {label}
-                </span>
-              )}
-            </div>
-          </>
-        )}
-      </motion.div>
-    </Link>
+              <div className="flex flex-col">
+                {title && (
+                  <span className="text-sm font-semibold leading-tight">
+                    {title}
+                  </span>
+                )}
+                {label && (
+                  <span className="text-[10px] opacity-50 font-medium mt-0.5">
+                    {label}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </motion.div>
+      )}
+    </>
   );
 };
 
