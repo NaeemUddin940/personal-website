@@ -19,19 +19,19 @@ export const ThemeToggle = () => {
     <div>
       <Select
         value={theme}
-        align="center"
+        position="bottom-center"
         onChange={setTheme}
         showChevron={false}
       >
-        <Option value="light" label>
+        <Option value="light">
           <Sun size={18} className="text-amber-500" />
           <span>Light</span>
         </Option>
-        <Option value="dark" label>
+        <Option value="dark">
           <Moon size={18} className="text-indigo-400" />
           <span>Dark</span>
         </Option>
-        <Option value="system" label>
+        <Option value="system">
           <Monitor size={18} className="text-emerald-500" />
           <span>System</span>
         </Option>

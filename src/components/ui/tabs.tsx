@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -201,9 +200,7 @@ export const TabsTrigger = ({
     underline: cn(
       "text-sm font-medium transition-colors duration-200 relative",
       isVertical ? "px-4 py-2 w-full justify-start" : "px-2 py-3",
-      isActive
-        ? "text-primary-foreground dark:text-primary"
-        : "text-slate-500 hover:text-slate-700 dark:text-slate-400",
+      isActive ? "text-primary" : "text-muted-foreground",
     ),
     glass: cn(
       "px-6 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200",
@@ -245,6 +242,7 @@ export const TabsTrigger = ({
 
   return (
     <button
+      type="button"
       onClick={() => handleTabChange(value)}
       onMouseEnter={() => setHoveredTab?.(value)}
       className={cn(
@@ -276,7 +274,7 @@ export const TabsTrigger = ({
       )}
 
       <span className="relative flex items-center gap-2 whitespace-nowrap">
-        {Icon && <Icon className="w-4 h-4" />}
+        {Icon}
         {children}
       </span>
     </button>

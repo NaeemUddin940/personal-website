@@ -19,7 +19,7 @@ interface ForgotPasswordConfig {
 interface InputFieldProps {
   name: string;
   label?: string;
-  type?: string;
+  type?: "text" | "number" | "password" | "textarea";
   placeholder?: string;
   className?: string;
   containerClassName?: string;
@@ -31,8 +31,9 @@ interface InputFieldProps {
   iconClassName?: string;
   required?: boolean;
   error?: string | string[];
+  helpText?: string;
   id?: string;
-  defaultValue?: string | number;
+  value?: string | number;
   onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   [key: string]: any;
 }
@@ -46,13 +47,14 @@ export default function Input({
   containerClassName = "",
   rows = 4,
   onChange,
-  forgotPassword, // showForgotPassword-এর বদলে এটি ব্যবহার করছি
+  forgotPassword,
   icon: Icon,
   iconPosition = "left",
+  helpText,
   iconClassName = "",
-  required = false,
   error,
-  defaultValue,
+  required = false,
+  value,
   ...props
 }: InputFieldProps) {
   const generatedId = useId();
@@ -66,9 +68,9 @@ export default function Input({
 
   const baseClasses = `
     w-full px-4 py-2 rounded-lg transition-all duration-200 outline-none border
-    bg-muted text-foreground border-border
+    bg-input text-secondary-foreground border-border
     placeholder:text-muted-foreground
-    focus:ring-2 focus:ring-primary/70 focus:border-primary
+    focus:ring-2 focus:ring-primary/30 focus:border-primary
     disabled:opacity-60 disabled:cursor-not-allowed
   `;
 
@@ -153,7 +155,7 @@ export default function Input({
             name={name}
             rows={rows}
             placeholder={placeholder}
-            defaultValue={defaultValue}
+            value={value}
             onChange={onChange}
             className={cn(
               `${baseClasses} ${errorClasses} resize-none ${className}`,
@@ -167,7 +169,8 @@ export default function Input({
               name={name}
               type={isPassword ? (showPassword ? "text" : "password") : type}
               placeholder={placeholder}
-              defaultValue={defaultValue}
+              min={type === "number" ? 1 : ""}
+              value={value}
               onChange={onChange}
               className={`${baseClasses} ${iconPaddingClasses} ${errorClasses} ${className}`}
               {...props}
@@ -185,15 +188,20 @@ export default function Input({
         )}
         {!isPassword && renderIcon("right")}
       </div>
+      {/* Fixed height layout shift আটকাবে */}
 
-      {errorMessage && (
+      {errorMessage ? (
         <span
           role="alert"
           className="text-[12px] font-medium text-destructive mt-0.5 ml-1 animate-in fade-in slide-in-from-top-1"
         >
           {errorMessage}
         </span>
-      )}
+      ) : helpText ? (
+        <span className="text-[12px] text-muted-foreground animate-in fade-in">
+          💡 {helpText}
+        </span>
+      ) : null}
     </div>
   );
 }

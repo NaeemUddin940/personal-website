@@ -108,7 +108,7 @@ export default function AuthForm(closeModal) {
                   label="Enter Full Name"
                   name="name"
                   placeholder="Enter Your Full Name"
-                  defaultValue={state?.inputs?.name}
+                  value={state?.inputs?.name}
                   error={state?.errors?.name}
                 />
               )}
@@ -117,7 +117,7 @@ export default function AuthForm(closeModal) {
                 label="Enter Email Address"
                 name="email"
                 placeholder="Enter Your Email Address"
-                defaultValue={state?.inputs?.email}
+                value={state?.inputs?.email}
                 error={state?.errors?.email}
                 onChange={(e) => setEmail(e.target.value)}
               />

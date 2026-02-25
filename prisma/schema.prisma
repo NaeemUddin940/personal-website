@@ -155,3 +155,200 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+// ==================== ATTRIBUTE ENUMS ====================
+
+enum AttributeType {
+  TEXT        // Simple text input
+  TEXTAREA    // Multi-line text
+  NUMBER      // Numeric value
+  BOOLEAN     // Yes/No
+  SELECT      // Single select dropdown
+  MULTISELECT // Multiple select
+  RADIO       // Radio buttons
+  CHECKBOX    // Checkbox group
+  COLOR       // Color picker
+  SIZE        // Size chart
+  IMAGE       // Image upload
+  FILE        // File upload
+  DATE        // Date picker
+  DATETIME    // Date & time
+  RANGE       // Range slider (min-max)
+  PRICE       // Price value
+  PERCENTAGE  // Percentage value
+  WEIGHT      // Weight with unit
+  DIMENSION   // Length, width, height
+  URL         // Link/URL
+  EMAIL       // Email address
+  PHONE       // Phone number
+  RATING      // Rating (1-5)
+  JSON        // Complex JSON data
+}
+
+enum SwatchType {
+  COLOR       // Color swatch (#FF0000)
+  IMAGE       // Image swatch (URL)
+  TEXT        // Text swatch (S, M, L)
+  ICON        // Icon swatch
+  GRADIENT    // Gradient color
+  PATTERN     // Pattern image
+}
+
+enum AttributeGroup {
+  BASIC           // Basic information
+  TECHNICAL       // Technical specifications
+  PHYSICAL        // Physical attributes (weight, dimensions)
+  PACKAGING       // Package details
+  WARRANTY        // Warranty information
+  SHIPPING        // Shipping details
+  SEO             // SEO meta data
+  MARKETING       // Marketing attributes
+  INVENTORY       // Stock attributes
+  PRICING         // Price related
+  CUSTOM          // Custom attributes
+}
+
+enum AttributeValidation {
+  REQUIRED        // Field is required
+  UNIQUE          // Value must be unique
+  MIN_LENGTH      // Minimum length
+  MAX_LENGTH      // Maximum length
+  MIN_VALUE       // Minimum value
+  MAX_VALUE       // Maximum value
+  PATTERN         // Regex pattern
+  EMAIL           // Valid email
+  URL             // Valid URL
+  PHONE           // Valid phone number
+  IMAGE_DIMENSION // Image width x height
+  FILE_SIZE       // Max file size
+  FILE_TYPE       // Allowed file types
+  CUSTOM          // Custom validation
+}
+
+enum AttributeVisibility {
+  PUBLIC          // Visible to everyone
+  PRIVATE         // Only admin
+  HIDDEN          // Hidden from all
+  SELLER_ONLY     // Only seller (for multi-vendor)
+  BUYER_ONLY      // Only buyer
+}
+
+enum AttributeStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+// ==================== ATTRIBUTE MODELS ====================
+
+model Attribute {
+  id              String        @id @default(cuid())
+  name            String
+  slug            String        @unique
+  type            AttributeType
+  // group           AttributeGroup @default(BASIC)
+  
+  // Display settings
+  label           String?       // Display label
+  placeholder     String?       // Placeholder text
+  helpText        String?       @map("help_text") // Help text/tooltip
+  unit            String?       // kg, cm, px, etc.
+  unitPosition    String?       @map("unit_position") // prefix/suffix
+  
+  // Options for select/multiselect
+  options         Json?         // [{value: "red", label: "Red"}]
+  
+  // Validation rules
+  validations     Json?         // Array of validation rules
+  
+  // Numeric constraints
+  minValue        Float?        @map("min_value")
+  maxValue        Float?        @map("max_value")
+  minLength       Int?          @map("min_length")
+  maxLength       Int?          @map("max_length")
+  stepValue       Float?        @default(1) @map("step_value")
+  decimalPlaces   Int?          @default(0) @map("decimal_places")
+  
+  // Boolean settings
+  isRequired      Boolean       @default(false) @map("is_required")
+  isUnique        Boolean       @default(false) @map("is_unique")
+  isFilterable    Boolean       @default(true) @map("is_filterable")
+  isVisible       Boolean       @default(true) @map("is_visible")
+  isVariation     Boolean       @default(false) @map("is_variation") // For product variations
+  isSearchable    Boolean       @default(true) @map("is_searchable")
+  isComparable    Boolean       @default(true) @map("is_comparable")
+  
+  // UI settings
+  sortOrder       Int           @default(0) @map("sort_order")
+  // visibility      AttributeVisibility @default(PUBLIC)
+  cssClass        String?       @map("css_class")
+  icon            String?
+  
+  // Status
+  // status          AttributeStatus @default(ACTIVE)
+  
+  // Meta data
+  metaData        Json?         @map("meta_data") // Additional data
+  
+  // Relations
+  values          AttributeValue[]
+  // categories      CategoryAttribute[]
+  // products        ProductAttribute[]
+  // variations      VariationAttribute[]
+  
+  // System
+  createdBy       String?       @map("created_by")
+  updatedBy       String?       @map("updated_by")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  deletedAt       DateTime?     @map("deleted_at")
+
+  @@index([slug])
+  @@index([type])
+  // @@index([group])
+  // @@index([status])
+  @@map("attributes")
+}
+
+model AttributeValue {
+  id              String        @id @default(cuid())
+  attributeId     String        @map("attribute_id")
+  attribute       Attribute     @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  
+  // Value
+  value           String        // Display value
+  slug            String        // URL friendly value
+  
+  // Swatch for visual attributes
+  swatchType      SwatchType?   @map("swatch_type")
+  swatchValue     String?       @map("swatch_value") // Hex code, image URL, etc.
+  
+  // Additional data
+  description     String?       // Description of this value
+  image           String?       // Image for this value
+  colorCode       String?       @map("color_code") // Hex color code
+  metadata        Json?         // Additional metadata
+  
+  // Sorting
+  sortOrder       Int           @default(0) @map("sort_order")
+  
+  // Status
+  isActive        Boolean       @default(true) @map("is_active")
+  isDefault       Boolean       @default(false) @map("is_default")
+  
+  // Relations
+  // products        ProductAttribute[]
+  // variations      VariationAttribute[]
+  
+  // System
+  createdBy       String?       @map("created_by")
+  updatedBy       String?       @map("updated_by")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@unique([attributeId, slug])
+  @@index([attributeId])
+  @@index([slug])
+  @@map("attribute_values")
+}
