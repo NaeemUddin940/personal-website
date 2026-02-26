@@ -2,7 +2,7 @@
 import { FormState } from "@/@types/form-state";
 import { ReturnType } from "@/@types/return-type";
 import { AUTH_ERROR_RESPONSE } from "@/constant/error/auth-error-response";
-import { AUTH_SUCCESS_RESPONSE } from "@/constant/success/auth-success-response";
+import { AUTH_SUCCESS_RESPONSE } from "@/constant/success/auth-response";
 import { auth } from "@/lib/auth";
 import { betterAuthErrorHandler } from "@/utils/better-auth-error-handler";
 import { validateSchema } from "@/utils/validate-schema";

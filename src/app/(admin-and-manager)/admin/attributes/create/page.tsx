@@ -1,9 +1,11 @@
 "use client";
+import { CreateAttribute } from "@/actions/attribute-management/create-attribute";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { attributeSchema } from "@/validation/attribute-validation";
 import { AlertCircle, Check, Eye, HelpCircle } from "lucide-react";
 import { useState, useTransition } from "react";
+import toast from "react-hot-toast";
 import AttrHeader from "./components/attr-header";
 import AttrValuesTab from "./components/attr-values-tab";
 import BasicInfoTab from "./components/basic-info-tab";
@@ -91,17 +93,33 @@ export default function AttributeCreatePage() {
     return true;
   };
 
-  const handleInputChange = (name, value) => {
+  const handleInputChange = (name: string, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (errors?.[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const finalSubmit = () => {
-    // const result = attributeSchema.safeParse(formData);
-    // const errors = result.error?.format();
-    // console.log(errors);
-    console.log(formData);
     startTransition(async () => {
-      // await CreateAttribute(formData);
+      const res = await CreateAttribute(formData);
+
+      if (res.success) {
+        toast.success(res.message);
+        // Reset form or redirect
+        setFormData(formData);
+      } else {
+        toast.error(res.message);
+        if (res.tab) {
+          // অপশনাল: প্রথম যে ট্যাবে এরর আছে সেখানে অটো নিয়ে যাওয়া
+          setOpenTab(res.tab);
+        }
+      }
     });
   };
 
@@ -274,7 +292,7 @@ export default function AttributeCreatePage() {
                     </div>
                   )}
 
-                  {formData.values.length > 0 && (
+                  {formData?.values?.length > 0 && (
                     <div className="border-t border-border pt-3">
                       <div className="text-sm font-medium mb-2 text-foreground">
                         Values ({formData.values.length})

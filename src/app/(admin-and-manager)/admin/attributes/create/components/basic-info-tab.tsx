@@ -6,7 +6,7 @@ import {
   ATTRIBUTE_TYPES,
   STATUS_OPTIONS,
   VISIBILITY_OPTIONS,
-} from "@/constant/attribute/atter-constant";
+} from "@/constant/attribute/attribute-constant";
 import { generateSlug } from "@/utils/slug-generator";
 import AttrConfiguratuion from "./attr-configuratuion";
 
@@ -44,6 +44,7 @@ export default function BasicInfoTab({
           <Input
             label="Slug"
             name="slug"
+            disabled
             placeholder="color"
             error={errors?.slug}
             value={formData.slug}

@@ -8,7 +8,7 @@ export default function AttrHeader({
   isSubmitting,
 }) {
   return (
-    <div className="flex items-center justify-between mb-6 bg-card border border-border rounded-xl shadow-sm p-4">
+    <div className="flex items-center justify-between mb-6 rounded-xl custom-shadow p-4">
       <div>
         <h1 className="text-2xl font-bold bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           Create New Attribute

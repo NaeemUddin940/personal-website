@@ -30,7 +30,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  console.log(session?.user?.role);
   if (isAdminPage) {
     if (!session?.user) {
       return NextResponse.redirect(new URL("/auth/sign-in", request.url));

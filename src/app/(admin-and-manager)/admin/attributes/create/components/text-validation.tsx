@@ -5,7 +5,6 @@ export default function TextValidation({
   errors,
   onChange,
   formData,
-  setFormData, // setFormData যোগ করা হয়েছে অপশন ম্যানেজ করার জন্য
 }: {
   errors: any;
   formData: any;
@@ -99,6 +98,7 @@ export default function TextValidation({
               name="stepValue"
               type="number"
               value={formData.stepValue}
+              error={errors?.stepValue}
               onChange={(e) => onChange("stepValue", e.target.value)}
             />
             <Input
@@ -106,6 +106,7 @@ export default function TextValidation({
               type="number"
               name="decimalPlaces"
               value={formData.decimalPlaces}
+              error={errors?.decimalPlaces}
               onChange={(e) => onChange("decimalPlaces", e.target.value)}
             />
           </div>
@@ -127,6 +128,7 @@ export default function TextValidation({
               name="minLength"
               type="number"
               value={formData.minLength}
+              error={errors?.minLength}
               onChange={(e) => onChange("minLength", e.target.value)}
             />
             <Input
@@ -134,6 +136,7 @@ export default function TextValidation({
               name="maxLength"
               type="number"
               value={formData.maxLength}
+              error={errors?.maxLength}
               onChange={(e) => onChange("maxLength", e.target.value)}
             />
           </div>
@@ -166,24 +169,24 @@ export default function TextValidation({
                 className="flex gap-3 items-center animate-in fade-in slide-in-from-left-2"
               >
                 <div className="flex-1">
-                  <input
+                  <Input
                     type="text"
                     value={option.label || ""}
                     onChange={(e) =>
                       handleOptionChange(index, "label", e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground text-sm"
+                    // className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground text-sm"
                     placeholder="Display Label (e.g. WiFi)"
                   />
                 </div>
                 <div className="flex-1">
-                  <input
+                  <Input
                     type="text"
                     value={option.value || ""}
                     onChange={(e) =>
                       handleOptionChange(index, "value", e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground text-sm"
+                    // className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground text-sm"
                     placeholder="System Value (e.g. wifi)"
                   />
                 </div>

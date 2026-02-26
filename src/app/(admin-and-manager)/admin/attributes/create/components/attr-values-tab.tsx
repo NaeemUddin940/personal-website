@@ -3,7 +3,7 @@
 import Input from "@/components/common/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Option, Select } from "@/components/ui/select";
-import { SWATCH_TYPES } from "@/constant/attribute/atter-constant";
+import { SWATCH_TYPES } from "@/constant/attribute/attribute-constant";
 import { generateSlug } from "@/utils/slug-generator";
 import { Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -32,7 +32,6 @@ export default function AttrValuesTab({
     setFormData((prev) => ({
       ...prev,
       values: [
-        ...prev.values,
         {
           value: "",
           slug: "",
@@ -40,6 +39,7 @@ export default function AttrValuesTab({
           swatchValue: "",
           isDefault: false,
         },
+        ...prev.values,
       ],
     }));
   }
@@ -149,6 +149,7 @@ const AttributeValueItem = ({
         <Input
           label="Slug"
           name="slug"
+          disabled
           placeholder="e.g., red"
           value={value.slug}
           error={errors.slug}

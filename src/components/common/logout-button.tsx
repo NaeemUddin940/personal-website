@@ -1,5 +1,5 @@
 "use client";
-import { AUTH_SUCCESS_RESPONSE } from "@/constant/success/auth-success-response";
+import { AUTH_SUCCESS_RESPONSE } from "@/constant/success/auth-response";
 import { authClient } from "@/utils/auth-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

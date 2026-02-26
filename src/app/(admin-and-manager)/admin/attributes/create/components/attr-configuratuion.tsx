@@ -1,6 +1,6 @@
 "use client";
 import { Toggle } from "@/components/ui/toggle";
-import { TOGGLE_FLAG } from "@/constant/attribute/atter-constant";
+import { TOGGLE_FLAG } from "@/constant/attribute/attribute-constant";
 import { motion } from "framer-motion";
 
 export default function AttrConfiguratuion({

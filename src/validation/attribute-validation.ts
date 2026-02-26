@@ -32,13 +32,38 @@ export const attributeSchema: Record<string, z.ZodSchema> = {
   }),
 
   // --- Validation Settings Tab ---
+  // --- Validation Settings Tab ---
   validation: z.object({
-    minValue: z.coerce.number().optional().or(z.literal("")),
-    maxValue: z.coerce.number().optional().or(z.literal("")),
-    stepValue: z.coerce.number().default(1),
-    decimalPlaces: z.coerce.number().min(0).max(5).default(0),
-    minLength: z.coerce.number().optional().or(z.literal("")),
-    maxLength: z.coerce.number().optional().or(z.literal("")),
+    minValue: z.coerce
+      .number({ invalid_type_error: "Min value must be a number" })
+      .optional()
+      .or(z.literal("")),
+
+    maxValue: z.coerce
+      .number({ invalid_type_error: "Max value must be a number" })
+      .optional()
+      .or(z.literal("")),
+
+    stepValue: z.coerce
+      .number()
+      .min(0.1, "Step value must be at least 0.1")
+      .default(1),
+
+    decimalPlaces: z.coerce
+      .number()
+      .min(0, "Decimal places cannot be negative")
+      .max(5, "Decimal places cannot be more than 5") // Apnar requirement: 5 er beshi hole error
+      .default(0),
+
+    minLength: z.coerce
+      .number({ invalid_type_error: "Min length must be a number" })
+      .optional()
+      .or(z.literal("")),
+
+    maxLength: z.coerce
+      .number({ invalid_type_error: "Max length must be a number" })
+      .optional()
+      .or(z.literal("")),
   }),
 
   // --- Attribute Values Tab ---
@@ -56,3 +81,13 @@ export const attributeSchema: Record<string, z.ZodSchema> = {
       .min(1, "At least one attribute value must be added"),
   }),
 };
+
+export const fullAttributeSchema = z.object({
+  ...attributeSchema.basic.shape, // Basic tab er shob field
+  ...attributeSchema.display.shape, // Display tab er shob field
+  ...attributeSchema.validation.shape, // Validation tab er shob field
+  ...attributeSchema.values.shape, // Values tab er array field
+});
+
+// Type inference (Optional kintu helpful)
+export type FullAttributeInput = z.infer<typeof fullAttributeSchema>;

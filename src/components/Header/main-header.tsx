@@ -17,6 +17,7 @@ import HeaderLogo from "./header-logo";
 
 import { authClient } from "@/utils/auth-client";
 import { Box, Settings, Users } from "lucide-react";
+import { useEffect } from "react";
 import LogoutButton from "../common/logout-button";
 
 export const dropdownItems = {
@@ -115,7 +116,11 @@ export default function MainHeader() {
     },
   ];
 
-  const { data: session } = authClient.useSession();
+  const { data: session, refetch } = authClient.useSession();
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   return (
     <header className="border-b bg-card border-border">

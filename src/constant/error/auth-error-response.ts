@@ -59,4 +59,26 @@ export const AUTH_ERROR_RESPONSE = {
       "💥 Oops! Something went wrong on our end. Please try again later.",
     status: 500,
   },
+  UNAUTHORIZED: {
+    success: false,
+    action: "UNAUTHORIZED_ACCESS",
+    message:
+      "🔒 Unauthorized! Please login to your account to perform this action.",
+    status: 401,
+  },
+
+  INSUFFICIENT_PERMISSIONS: {
+    success: false,
+    action: "FORBIDDEN_ACCESS",
+    message:
+      "🚫 Access Denied! You don't have permission to perform this action.",
+    status: 403,
+  },
+  ACCOUNT_RESTRICTED: {
+    success: false,
+    action: "RESTRICTED_ACCESS",
+    message:
+      "⚠️ Your account is restricted. Please contact support to enable attribute management.",
+    status: 403,
+  },
 };

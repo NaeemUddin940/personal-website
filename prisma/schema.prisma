@@ -240,6 +240,7 @@ enum AttributeStatus {
   ARCHIVED
 }
 
+
 // ==================== ATTRIBUTE MODELS ====================
 
 model Attribute {
@@ -247,7 +248,7 @@ model Attribute {
   name            String
   slug            String        @unique
   type            AttributeType
-  // group           AttributeGroup @default(BASIC)
+  group           AttributeGroup @default(BASIC)
   
   // Display settings
   label           String?       // Display label
@@ -281,12 +282,12 @@ model Attribute {
   
   // UI settings
   sortOrder       Int           @default(0) @map("sort_order")
-  // visibility      AttributeVisibility @default(PUBLIC)
+  visibility      AttributeVisibility @default(PUBLIC)
   cssClass        String?       @map("css_class")
   icon            String?
   
   // Status
-  // status          AttributeStatus @default(ACTIVE)
+  status          AttributeStatus @default(ACTIVE)
   
   // Meta data
   metaData        Json?         @map("meta_data") // Additional data
@@ -306,8 +307,8 @@ model Attribute {
 
   @@index([slug])
   @@index([type])
-  // @@index([group])
-  // @@index([status])
+  @@index([group])
+  @@index([status])
   @@map("attributes")
 }
 

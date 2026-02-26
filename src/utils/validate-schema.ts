@@ -5,7 +5,7 @@ export const validateSchema = <T>(
   schema: ZodSchema,
   data: FormData,
 ): ReturnType => {
-  const rawData = Object.fromEntries(data);
+  const rawData = data instanceof FormData ? Object.fromEntries(data) : data;
   const result = schema.safeParse(rawData);
 
   if (!result.success) {
