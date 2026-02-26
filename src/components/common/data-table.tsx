@@ -525,22 +525,26 @@ export const DataTable = ({
                         />
                       </td>
                       {isExpandable && (
-                        <td className="text-center border-b border-border/20">
-                          <button
+                        <td
+                          className="text-center border-b border-border/20"
+                          onClick={() => toggleExpand(item.id)}
+                        >
+                          {/* <button
                             onClick={() => toggleExpand(item.id)}
                             className={`p-2.5 rounded-xl transition-all shadow-sm ${isExpanded ? "bg-primary text-white shadow-primary/20" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
-                          >
-                            <ChevronDown
-                              size={18}
-                              className={`transition-transform duration-500 ${isExpanded ? "rotate-180" : ""}`}
-                            />
-                          </button>
+                          > */}
+                          <ChevronDown
+                            size={18}
+                            className={`transition-transform duration-500 ${isExpanded ? "rotate-180" : ""}`}
+                          />
+                          {/* </button> */}
                         </td>
                       )}
                       {activeColumns.map((col) => (
                         <td
                           key={String(col.accessor)}
-                          className="border-b border-border/20 whitespace-nowrap"
+                          onClick={() => toggleExpand(item.id)}
+                          className="border-b border-border/20 cursor-pointer whitespace-nowrap"
                         >
                           {col.render ? (
                             col.render(item[col.accessor], item)
