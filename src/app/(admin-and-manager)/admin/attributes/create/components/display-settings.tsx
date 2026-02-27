@@ -91,9 +91,9 @@ export default function DisplaySettings({
           label="Icon"
           name="icon"
           placeholder="Icon name or URL"
-          value={formData.cssClass}
+          value={formData.icon}
           error={errors?.icon}
-          onChange={(e) => onChange("cssClass", e.target.value)}
+          onChange={(e) => onChange("icon", e.target.value)}
         />
       </div>
     </div>

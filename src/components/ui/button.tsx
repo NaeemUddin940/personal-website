@@ -8,6 +8,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
@@ -24,7 +25,7 @@ type IconType =
   | ReactNode;
 
 export const buttonVariants = {
-  base: "relative inline-flex animate-in fade-in zoom-in whitespace-nowrap items-center justify-center cursor-pointer rounded-md font-bold transition-all duration-200 overflow-hidden focus:outline-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group min-w-0 w-full",
+  base: "relative inline-flex animate-in fade-in zoom-in whitespace-nowrap items-center justify-center cursor-pointer rounded-md font-bold transition-all duration-200 overflow-hidden focus:outline-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group",
   variants: {
     default:
       "border border-input-border shadow-sm text-sm text-foreground font-medium",
@@ -55,7 +56,7 @@ export const buttonVariants = {
   sizes: {
     default: "px-3 py-2 text-md",
     sm: "px-2 py-1.5 text-xs sm:px-2",
-    md: "px-3 py-3 text-sm sm:px-6",
+    md: "px-3 py-2.5 text-sm sm:px-6",
     lg: "px-8 py-4 text-lg",
   },
 };
@@ -189,15 +190,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     );
 
     return (
-      <>
-        {/* <style
-          dangerouslySetInnerHTML={{
-            __html: `@keyframes shimmer { 100% { transform: translateX(190%); } }`,
-          }}
-        /> */}
-
+      <div>
         {requireAreYouSure ? (
-          <AlertDialog>
+          <AlertDialog animation="bounce" position="center">
             <AlertDialogTrigger asChild>{buttonContent}</AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -220,7 +215,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           buttonContent
         )}
-      </>
+      </div>
     );
   },
 );

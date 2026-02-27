@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   LucideAlertTriangle,
@@ -8,13 +9,41 @@ import {
 } from "lucide-react";
 import React, {
   createContext,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
-const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
+// --- Types & Interfaces ---
+
+type Position =
+  | "center"
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
+type Variant = "success" | "error" | "warning" | "info";
+type Animation = "scale" | "bounce" | "slideUp" | "bubble" | "fade";
+
+interface AlertDialogContextProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  animation: Animation;
+  variant: Variant;
+  position: Position;
+  triggerRect: DOMRect | null;
+  setTriggerRect: (rect: DOMRect | null) => void;
+}
+
+const AlertDialogContext = createContext<AlertDialogContextProps | null>(null);
+
+// --- Animations Preset ---
 
 const animations = {
   scale: {
@@ -32,23 +61,22 @@ const animations = {
     exit: { opacity: 0, scale: 0.5 },
   },
   slideUp: {
-    initial: { opacity: 0, y: 100 },
+    initial: { opacity: 0, y: 50 },
     animate: {
       opacity: 1,
       y: 0,
       transition: { type: "spring", damping: 25, stiffness: 300 },
     },
-    exit: { opacity: 0, y: 100 },
+    exit: { opacity: 0, y: 50 },
   },
   bubble: {
-    initial: { opacity: 0, scale: 0, borderRadius: "100%" },
+    initial: { opacity: 0, scale: 0 },
     animate: {
       opacity: 1,
       scale: 1,
-      borderRadius: "0.75rem",
       transition: { type: "spring", damping: 20, stiffness: 200 },
     },
-    exit: { opacity: 0, scale: 0, borderRadius: "100%" },
+    exit: { opacity: 0, scale: 0 },
   },
   fade: {
     initial: { opacity: 0 },
@@ -57,21 +85,31 @@ const animations = {
   },
 };
 
-const AlertDialogContext = createContext<any>(null);
+// --- Components ---
 
-function AlertDialog({
+export function AlertDialog({
   children,
   open: controlledOpen,
   onOpenChange,
   animation = "scale",
   variant = "info",
+  position = "center",
+}: {
+  children: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  animation?: Animation;
+  variant?: Variant;
+  position?: Position;
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : uncontrolledOpen;
 
   const setOpen = useCallback(
-    (value) => {
+    (value: boolean) => {
       if (!isControlled) setUncontrolledOpen(value);
       onOpenChange?.(value);
     },
@@ -88,24 +126,56 @@ function AlertDialog({
   }, [open, setOpen]);
 
   return (
-    <AlertDialogContext.Provider value={{ open, setOpen, animation, variant }}>
+    <AlertDialogContext.Provider
+      value={{
+        open,
+        setOpen,
+        animation,
+        variant,
+        position,
+        triggerRect,
+        setTriggerRect,
+      }}
+    >
       {children}
     </AlertDialogContext.Provider>
   );
 }
 
-function AlertDialogTrigger({ children, asChild, ...props }) {
-  const { setOpen } = useContext(AlertDialogContext);
-  const handleClick = () => setOpen(true);
+export function AlertDialogTrigger({
+  children,
+  asChild,
+  className,
+  ...props
+}: any) {
+  const context = useContext(AlertDialogContext);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  if (!context) return null;
+
+  const handleClick = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    context.setTriggerRect(rect);
+    context.setOpen(true);
+  };
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children, { onClick: handleClick, ...props });
+    // eslint-disable-next-line react-hooks/refs
+    return React.cloneElement(children as any, {
+      onClick: handleClick,
+      ref: triggerRef,
+      ...props,
+    });
   }
 
   return (
     <button
+      ref={triggerRef}
       onClick={handleClick}
-      className="px-4 py-2 rounded-lg font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+      className={cn(
+        "px-4 py-2 rounded-lg font-medium transition-colors bg-primary text-primary-foreground hover:opacity-90 cursor-pointer",
+        className,
+      )}
       {...props}
     >
       {children}
@@ -113,8 +183,57 @@ function AlertDialogTrigger({ children, asChild, ...props }) {
   );
 }
 
-function AlertDialogContent({ children, className, size = "default" }) {
-  const { open, setOpen, animation } = useContext(AlertDialogContext);
+export function AlertDialogContent({
+  children,
+  className,
+  size = "default",
+}: {
+  children: ReactNode;
+  className?: string;
+  size?: "default" | "small";
+}) {
+  const context = useContext(AlertDialogContext);
+  if (!context) return null;
+
+  const { open, setOpen, animation, position, triggerRect } = context;
+
+  const anchorStyle: React.CSSProperties = {};
+
+  if (position !== "center" && triggerRect) {
+    const spacing = 12;
+    const modalWidth = size === "default" ? 448 : 384;
+
+    anchorStyle.position = "absolute";
+
+    // Vertical Calculation
+    if (position.startsWith("top")) {
+      // Show above the button
+      anchorStyle.bottom =
+        window.innerHeight - (triggerRect.top + window.scrollY) + spacing;
+    } else if (position.startsWith("bottom")) {
+      // Show below the button
+      anchorStyle.top = triggerRect.bottom + window.scrollY + spacing;
+    }
+
+    // Horizontal Calculation
+    if (position.endsWith("left")) {
+      anchorStyle.left = triggerRect.left + window.scrollX;
+    } else if (position.endsWith("center")) {
+      anchorStyle.left =
+        triggerRect.left +
+        window.scrollX +
+        triggerRect.width / 2 -
+        modalWidth / 2;
+    } else if (position.endsWith("right")) {
+      anchorStyle.left = triggerRect.right + window.scrollX - modalWidth;
+    }
+
+    // Boundary check to keep it on screen
+    anchorStyle.left = Math.max(
+      10,
+      Math.min(Number(anchorStyle.left), window.innerWidth - modalWidth - 10),
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -125,17 +244,23 @@ function AlertDialogContent({ children, className, size = "default" }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-50 bg-muted/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm pointer-events-auto"
           />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div
+            className={cn(
+              "fixed inset-0 z-50 flex pointer-events-none",
+              position === "center" ? "items-center justify-center p-4" : "",
+            )}
+          >
             <motion.div
               variants={animations[animation] || animations.scale}
               initial="initial"
               animate="animate"
               exit="exit"
+              style={anchorStyle}
               className={cn(
-                "pointer-events-auto relative grid gap-4 border bg-card p-6 shadow-xl rounded-2xl overflow-hidden",
-                size === "default" ? "max-w-md" : "max-w-sm",
+                "pointer-events-auto relative grid gap-4 border bg-card p-6 shadow-2xl rounded-2xl overflow-hidden",
+                size === "default" ? "max-w-md w-full" : "max-w-sm w-full",
                 className,
               )}
             >
@@ -148,7 +273,7 @@ function AlertDialogContent({ children, className, size = "default" }) {
   );
 }
 
-function AlertDialogHeader({ className, ...props }) {
+export function AlertDialogHeader({ className, ...props }: any) {
   return (
     <div
       className={cn(
@@ -160,45 +285,33 @@ function AlertDialogHeader({ className, ...props }) {
   );
 }
 
-function AlertDialogMedia({ className, children, variant: propVariant }) {
+export function AlertDialogMedia({ className, variant: propVariant }: any) {
   const context = useContext(AlertDialogContext);
   const variant = propVariant || context?.variant || "info";
-
   const config = {
-    success: {
-      icon: LucideCheckCircle2,
-      color: "bg-success text-success-foreground",
-    },
+    success: { icon: LucideCheckCircle2, color: "bg-emerald-500 text-white" },
     error: {
       icon: LucideXCircle,
       color: "bg-destructive text-destructive-foreground",
     },
-    warning: {
-      icon: LucideAlertTriangle,
-      color: "bg-warning text-warning-foreground",
-    },
-    info: {
-      icon: LucideInfo,
-      color: "bg-info text-info-foreground",
-    },
+    warning: { icon: LucideAlertTriangle, color: "bg-amber-500 text-white" },
+    info: { icon: LucideInfo, color: "bg-blue-500 text-white" },
   };
-
-  const { icon: DefaultIcon, color } = config[variant];
-
+  const { icon: Icon, color } = config[variant as Variant];
   return (
     <div
       className={cn(
-        "mx-auto sm:mx-0 flex h-12 w-12 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 mb-2 transition-colors",
+        "mx-auto sm:mx-0 flex h-10 w-10 shrink-0 items-center justify-center rounded-full mb-2",
         color,
         className,
       )}
     >
-      {children || <DefaultIcon className="h-6 w-6" />}
+      <Icon className="h-5 w-5" />
     </div>
   );
 }
 
-function AlertDialogTitle({ className, ...props }) {
+export function AlertDialogTitle({ className, ...props }: any) {
   return (
     <h2
       className={cn("text-lg font-bold text-card-foreground", className)}
@@ -207,7 +320,7 @@ function AlertDialogTitle({ className, ...props }) {
   );
 }
 
-function AlertDialogDescription({ className, ...props }) {
+export function AlertDialogDescription({ className, ...props }: any) {
   return (
     <p
       className={cn("text-sm leading-relaxed text-muted-foreground", className)}
@@ -216,7 +329,7 @@ function AlertDialogDescription({ className, ...props }) {
   );
 }
 
-function AlertDialogFooter({ className, ...props }) {
+export function AlertDialogFooter({ className, ...props }: any) {
   return (
     <div
       className={cn(
@@ -228,33 +341,21 @@ function AlertDialogFooter({ className, ...props }) {
   );
 }
 
-function AlertDialogAction({
+export function AlertDialogAction({
   className,
   onClick,
   children,
-  variant: propVariant,
   ...props
-}) {
-  const { setOpen, variant: contextVariant } = useContext(AlertDialogContext);
-  const variant = propVariant || contextVariant || "info";
-
-  const variantStyles = {
-    success: "bg-success hover:bg-success-foreground focus:ring-success",
-    error:
-      "bg-destructive hover:bg-destructive-foreground focus:ring-destructive",
-    warning: "bg-warning hover:bg-warning-foreground focus:ring-warning",
-    info: "bg-primary hover:bg-primary-foreground focus:ring-primary",
-  };
-
+}: any) {
+  const context = useContext(AlertDialogContext);
   return (
     <button
       onClick={(e) => {
         onClick?.(e);
-        setOpen(false);
+        context?.setOpen(false);
       }}
       className={cn(
-        "inline-flex h-10 items-center bg-primary hover:bg-primary/90 cursor-pointer justify-center rounded-lg px-4 py-2 text-sm font-semibold text-primary-foreground transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 disabled:opacity-50",
-        variantStyles[variant],
+        "inline-flex h-10 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold text-white bg-primary hover:opacity-90 transition-all cursor-pointer",
         className,
       )}
       {...props}
@@ -264,16 +365,21 @@ function AlertDialogAction({
   );
 }
 
-function AlertDialogCancel({ className, onClick, children, ...props }) {
-  const { setOpen } = useContext(AlertDialogContext);
+export function AlertDialogCancel({
+  className,
+  onClick,
+  children,
+  ...props
+}: any) {
+  const context = useContext(AlertDialogContext);
   return (
     <button
       onClick={(e) => {
         onClick?.(e);
-        setOpen(false);
+        context?.setOpen(false);
       }}
       className={cn(
-        "inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border border-rose-500 bg-rose-500/10 hover:bg-rose-500/20 px-4 py-2 text-sm font-semibold text-card-foreground transition-all focus:outline-none focus:ring-2 focus:ring-card-foreground focus:ring-offset-2 active:scale-95 mt-2 sm:mt-0",
+        "inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-transparent hover:bg-muted px-4 py-2 text-sm font-semibold text-card-foreground transition-all mt-2 sm:mt-0",
         className,
       )}
       {...props}
@@ -282,16 +388,3 @@ function AlertDialogCancel({ className, onClick, children, ...props }) {
     </button>
   );
 }
-
-export {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogMedia,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-};

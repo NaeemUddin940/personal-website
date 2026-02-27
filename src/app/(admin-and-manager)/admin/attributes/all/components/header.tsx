@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import Link from "next/link";
 
 export default function Header() {
   return (
@@ -11,9 +12,9 @@ export default function Header() {
           Configure product taxonomies, variations and data types.
         </p>
       </div>
-      <button className="bg-primary text-primary-foreground px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-transform shadow-xl shadow-primary/20 active:scale-95">
+      <Link href="/admin/attributes/create" className="bg-primary text-primary-foreground px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-transform shadow-xl shadow-primary/20 active:scale-95">
         <Plus size={18} /> New Attribute
-      </button>
+      </Link>
     </div>
   );
 }

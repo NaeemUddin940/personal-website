@@ -146,7 +146,7 @@ export function DialogContent({
             animate="animate"
             exit="exit"
             className={cn(
-              "relative z-50 w-full max-w-lg overflow-hidden rounded-xl border border-border bg-background p-6 shadow-xl ring-1 ring-foreground/5",
+              "relative z-50 w-full max-w-lg overflow-hidden rounded-xl border border-border bg-popover p-6 shadow-xl ring-1 ring-foreground/5",
               className,
             )}
             {...props}

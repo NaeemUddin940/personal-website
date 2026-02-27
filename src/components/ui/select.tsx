@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Layers } from "lucide-react";
 import React, {
   createContext,
   ReactElement,
@@ -13,7 +13,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-
 
 /* ======================= TYPES ======================= */
 
@@ -32,15 +31,16 @@ export type Position =
   | "right-bottom";
 
 interface SelectContextType {
-  value: string | undefined;
+  value: string | string[] | undefined;
   onSelect: (val: string) => void;
   isOpen: boolean;
+  multiple?: boolean;
 }
 
 interface SelectProps {
   children: ReactNode;
-  value?: string;
-  onChange?: (value: string) => void;
+  value?: string | string[];
+  onChange?: (value: any) => void;
   name?: string;
   placeholder?: string;
   label?: string;
@@ -48,18 +48,19 @@ interface SelectProps {
   position?: Position;
   showChevron?: boolean;
   offset?: number;
-  error?: string | string[];
   helpText?: string;
   disabled?: boolean;
   className?: string;
   customTrigger?: ReactNode;
+  multiple?: boolean;
+  iconOnly?: boolean;
 }
 
 interface OptionProps {
   value: string;
   children: ReactNode;
   label?: string;
-  defaultSelect?: boolean;
+  icon?: ReactNode;
 }
 
 /* ======================= CONTEXT ======================= */
@@ -83,8 +84,12 @@ export function Select({
   disabled = false,
   className,
   customTrigger,
+  multiple = false,
+  iconOnly = false,
 }: SelectProps) {
-  const [internalValue, setInternalValue] = useState<string>("");
+  const [internalValue, setInternalValue] = useState<string | string[]>(
+    multiple ? [] : "",
+  );
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -94,7 +99,6 @@ export function Select({
 
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
-  // Positioning logic updated to handle real-time scrolling
   const updatePosition = useCallback(() => {
     if (triggerRef.current && isOpen) {
       const rect = triggerRef.current.getBoundingClientRect();
@@ -107,23 +111,18 @@ export function Select({
 
       const [side, align] = position.split("-") as [string, string];
 
-      // Using getBoundingClientRect directly for fixed positioning relative to viewport
-      if (side === "top") {
-        top = rect.top - dHeight - offset;
-      } else if (side === "bottom") {
-        top = rect.bottom + offset;
-      } else if (side === "left" || side === "right") {
+      if (side === "top") top = rect.top - dHeight - offset;
+      else if (side === "bottom") top = rect.bottom + offset;
+      else if (side === "left" || side === "right") {
         if (align === "top") top = rect.top;
         else if (align === "center")
           top = rect.top + rect.height / 2 - dHeight / 2;
         else if (align === "bottom") top = rect.bottom - dHeight;
       }
 
-      if (side === "left") {
-        left = rect.left - dWidth - offset;
-      } else if (side === "right") {
-        left = rect.right + offset;
-      } else if (side === "top" || side === "bottom") {
+      if (side === "left") left = rect.left - dWidth - offset;
+      else if (side === "right") left = rect.right + offset;
+      else if (side === "top" || side === "bottom") {
         if (align === "left") left = rect.left;
         else if (align === "center")
           left = rect.left + rect.width / 2 - dWidth / 2;
@@ -137,13 +136,11 @@ export function Select({
   useEffect(() => {
     if (isOpen) {
       updatePosition();
-      // Listen to scroll and resize to keep dropdown attached
       window.addEventListener("scroll", updatePosition, {
         capture: true,
         passive: true,
       });
       window.addEventListener("resize", updatePosition);
-
       return () => {
         window.removeEventListener("scroll", updatePosition, { capture: true });
         window.removeEventListener("resize", updatePosition);
@@ -168,33 +165,90 @@ export function Select({
 
   const onSelect = useCallback(
     (val: string) => {
-      if (!isControlled) setInternalValue(val);
-      onChange?.(val);
-      setIsOpen(false);
+      let newValue: string | string[];
+
+      if (multiple) {
+        const prevArr = Array.isArray(currentValue) ? currentValue : [];
+        newValue = prevArr.includes(val)
+          ? prevArr.filter((i) => i !== val)
+          : [...prevArr, val];
+      } else {
+        newValue = val;
+        setIsOpen(false);
+      }
+
+      if (!isControlled) setInternalValue(newValue);
+      onChange?.(newValue);
     },
-    [onChange, isControlled],
+    [onChange, isControlled, multiple, currentValue],
   );
 
   const childrenArray = React.Children.toArray(
     children,
   ) as ReactElement<OptionProps>[];
-  const selectedOption = childrenArray.find(
-    (child) => String(child.props.value) === String(currentValue),
-  );
 
   const renderDisplay = () => {
-    if (!selectedOption)
-      return (
-        <span className="text-muted-foreground font-normal">{placeholder}</span>
+    if (multiple) {
+      const selectedOptions = childrenArray.filter((child) =>
+        (currentValue as string[])?.includes(String(child.props.value)),
       );
-    return selectedOption.props.label || selectedOption.props.children;
+
+      if (selectedOptions.length === 0)
+        return <span className="text-muted-foreground">{placeholder}</span>;
+
+      if (iconOnly) {
+        // IconOnly mode logic for multiple: show the icon of the first selected item
+        return selectedOptions[0].props.icon || <Layers size={20} />;
+      }
+
+      if (selectedOptions.length > 2)
+        return `${selectedOptions.length} items selected`;
+      return selectedOptions
+        .map((item) => item.props.label || item.props.children)
+        .join(", ");
+    }
+
+    const selectedOption = childrenArray.find(
+      (child) => String(child.props.value) === String(currentValue),
+    );
+
+    if (!selectedOption)
+      return <span className="text-muted-foreground">{placeholder}</span>;
+
+    const optionIcon = selectedOption.props.icon;
+    const optionContent =
+      selectedOption.props.label || selectedOption.props.children;
+
+    if (iconOnly) {
+      return optionIcon || <Layers size={20} />;
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        {optionIcon && <span className="shrink-0">{optionIcon}</span>}
+        <span className="truncate">{optionContent}</span>
+      </div>
+    );
   };
 
   return (
-    <SelectContext.Provider value={{ value: currentValue, onSelect, isOpen }}>
+    <SelectContext.Provider
+      value={{ value: currentValue, onSelect, isOpen, multiple }}
+    >
       <div className={cn("relative w-full", className)}>
-        {name && <input type="hidden" name={name} value={currentValue || ""} />}
-        {label && (
+        {name && (
+          <input
+            type="hidden"
+            name={name}
+            value={
+              multiple
+                ? (currentValue as string[]).join(",")
+                : (currentValue as string)
+            }
+          />
+        )}
+
+        {label && !iconOnly && (
           <label
             className={cn(
               "text-sm font-semibold ml-1 mb-2 block text-foreground",
@@ -211,12 +265,14 @@ export function Select({
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           className={cn(
-            "group flex w-full shadow-sm cursor-pointer rounded-xl items-center h-10 bg-input border transition-all px-4 outline-none",
+            "group flex shadow-sm cursor-pointer rounded-xl items-center bg-input border transition-all outline-none",
+            iconOnly
+              ? "h-10 w-10 justify-center px-0"
+              : "w-full h-10 px-4 justify-between",
             error
               ? "border-destructive ring-4 ring-destructive/10"
               : "border-border",
             isOpen && "ring-4 ring-ring/10 border-primary",
-            showChevron ? "justify-between" : "justify-center",
             disabled && "opacity-50 cursor-not-allowed",
           )}
         >
@@ -224,20 +280,25 @@ export function Select({
             customTrigger
           ) : (
             <>
-              <div className="relative h-full overflow-hidden flex items-center flex-1">
+              <div
+                className={cn(
+                  "relative h-full overflow-hidden flex items-center",
+                  !iconOnly && "flex-1",
+                )}
+              >
                 <AnimatePresence mode="popLayout" initial={false}>
-                  <motion.span
-                    key={currentValue || "placeholder"}
+                  <motion.div
+                    key={JSON.stringify(currentValue) || "placeholder"}
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 20, opacity: 0 }}
                     className="truncate font-medium flex items-center text-foreground"
                   >
                     {renderDisplay()}
-                  </motion.span>
+                  </motion.div>
                 </AnimatePresence>
               </div>
-              {showChevron && (
+              {showChevron && !iconOnly && (
                 <motion.div
                   animate={{ rotate: isOpen ? 180 : 0 }}
                   transition={{ duration: 0.3, ease: "circOut" }}
@@ -249,13 +310,6 @@ export function Select({
             </>
           )}
         </button>
-
-        {isOpen && (
-          <div
-            className="fixed inset-0 z-[9998]"
-            onClick={() => setIsOpen(false)}
-          />
-        )}
 
         <AnimatePresence>
           {isOpen && (
@@ -277,7 +331,7 @@ export function Select({
                 position: "fixed",
                 top: coords.top,
                 left: coords.left,
-                minWidth: Math.max(coords.width, 160),
+                minWidth: iconOnly ? 180 : Math.max(coords.width, 160),
                 zIndex: 9999,
               }}
               className="rounded-2xl p-1.5 bg-popover text-popover-foreground border border-border shadow-2xl outline-none"
@@ -288,56 +342,64 @@ export function Select({
             </motion.div>
           )}
         </AnimatePresence>
-        <div className="min-h-5 ml-1">
-          {/* Fixed height layout shift আটকাবে */}
-          {error ? (
-            <span
-              role="alert"
-              className="text-[12px] font-medium text-destructive animate-in fade-in slide-in-from-top-1 flex items-center gap-1"
-            >
-              ❌ {error}
-            </span>
-          ) : helpText ? (
-            <span className="text-[12px] text-muted-foreground animate-in fade-in">
-              💡 {helpText}
-            </span>
-          ) : null}
-        </div>
+
+        {!iconOnly && (
+          <div className="min-h-5 ml-1">
+            {error ? (
+              <span
+                role="alert"
+                className="text-[12px] font-medium text-destructive flex items-center gap-1"
+              >
+                ❌ {error}
+              </span>
+            ) : helpText ? (
+              <span className="text-[12px] text-muted-foreground">
+                💡 {helpText}
+              </span>
+            ) : null}
+          </div>
+        )}
       </div>
     </SelectContext.Provider>
   );
 }
 
 /* ======================= OPTION ======================= */
-
-export function Option({ value: itemValue, children }: OptionProps) {
+export function Option({ value: itemValue, children, icon }: OptionProps) {
   const context = useContext(SelectContext);
   if (!context) return null;
 
-  const { value, onSelect } = context;
-  const isSelected = String(value) === String(itemValue);
+  const { value, onSelect, multiple } = context;
+  const isSelected = multiple
+    ? Array.isArray(value) && value.includes(itemValue)
+    : String(value) === String(itemValue);
 
   return (
     <li
-      onClick={() => onSelect(itemValue)}
+      onClick={(e) => {
+        if (multiple) e.stopPropagation();
+        onSelect(itemValue);
+      }}
       className={cn(
-        "flex items-center justify-between gap-3 px-3 py-2 text-sm rounded-xl cursor-pointer transition-all mb-0.5 last:mb-0 outline-none",
+        "flex items-center justify-between gap-3 px-4 py-2.5 text-sm rounded-xl cursor-pointer transition-all mb-0.5 last:mb-0 group outline-none",
         isSelected
-          ? "bg-primary text-primary-foreground font-medium shadow-sm"
-          : "text-foreground/80 hover:bg-accent hover:text-accent-foreground",
+          ? "bg-primary text-primary-foreground font-bold"
+          : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
       )}
     >
-      <div className="flex items-center gap-3 whitespace-nowrap">
-        {children}
+      <div className="flex items-center gap-3">
+        {icon && <span className="shrink-0 text-base">{icon}</span>}
+        <span className="truncate">{children}</span>
       </div>
       {isSelected && (
-        <motion.span
+        <motion.div
+          layoutId={multiple ? undefined : "active-check"}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="h-4 w-4 rounded-full bg-green-500 flex items-center justify-center"
+          className="flex items-center justify-center h-5 w-5 rounded-full bg-green-500 shadow-sm"
         >
-          <Check size={12} strokeWidth={3} className="text-white" />
-        </motion.span>
+          <Check size={12} strokeWidth={4} className="text-white" />
+        </motion.div>
       )}
     </li>
   );

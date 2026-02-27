@@ -165,9 +165,7 @@ export default function MainHeader() {
                       icon={item.icon}
                     />
                   ))}
-                  {/* <DropdownItem>
-                  </DropdownItem> */}
-                  <LogoutButton size="sm" className="text-black" />
+                  <LogoutButton size="sm" fullWidth className="text-black" />
                 </DropdownContent>
               </Dropdown>
             ) : (

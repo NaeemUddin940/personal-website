@@ -1,5 +1,5 @@
 "use client";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Option, Select } from "./select";
 import { useTheme } from "./theme-provider";
@@ -20,19 +20,26 @@ export const ThemeToggle = () => {
       <Select
         value={theme}
         position="bottom-center"
+        iconOnly
         onChange={setTheme}
         showChevron={false}
       >
-        <Option value="light">
-          <Sun size={18} className="text-amber-500" />
+        <Option
+          icon={<Sun size={18} className="text-amber-500" />}
+          value="light"
+        >
           <span>Light</span>
         </Option>
-        <Option value="dark">
-          <Moon size={18} className="text-indigo-400" />
+        <Option
+          icon={<Moon size={18} className="text-indigo-400" />}
+          value="dark"
+        >
           <span>Dark</span>
         </Option>
-        <Option value="system">
-          <Monitor size={18} className="text-emerald-500" />
+        <Option
+          icon={<Monitor size={18} className="text-emerald-500" />}
+          value="system"
+        >
           <span>System</span>
         </Option>
       </Select>
