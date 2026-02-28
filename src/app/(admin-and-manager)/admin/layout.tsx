@@ -2,7 +2,7 @@
 import "@/app/globals.css";
 import { authClient } from "@/utils/auth-client";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AdminHeader from "./dashboard/components/admin-header";
 import Sidebar from "./dashboard/components/sidebar";
 
@@ -11,7 +11,10 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(true);
   const router = useRouter();
+
   const { data: session, isPending } = authClient.useSession();
 
   // Define who is allowed to be here
@@ -23,6 +26,15 @@ export default function AdminLayout({
       router.push("/");
     }
   }, [isAuthorized, isPending, router]);
+
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 640);
+    };
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop);
+    return () => window.removeEventListener("resize", checkDesktop);
+  }, []);
 
   if (isPending) {
     return (
@@ -38,11 +50,23 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <div className="w-full">
+    <div className="flex min-h-screen bg-background">
+      {/* Desktop Sidebar - Hidden on mobile, fixed on desktop */}
+      <Sidebar
+        onExpandChange={setSidebarExpanded}
+        className={isDesktop ? "flex" : "hidden"}
+      />
+
+      {/* Main Content Area - margin only on desktop */}
+      <div
+        className="flex-1 flex flex-col transition-all duration-300"
+        style={{
+          marginLeft: isDesktop ? (sidebarExpanded ? "280px" : "80px") : "0px",
+        }}
+      >
         <AdminHeader />
-        <main>{children}</main>
+
+        <main className="flex-1">{children}</main>
       </div>
     </div>
   );

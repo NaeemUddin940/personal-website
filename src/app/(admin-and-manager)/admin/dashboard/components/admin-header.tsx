@@ -1,5 +1,7 @@
+"use client";
 import LogoutButton from "@/components/common/logout-button";
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import {
   Dropdown,
   DropdownContent,
@@ -7,26 +9,38 @@ import {
 } from "@/components/ui/dropdown";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { authClient } from "@/utils/auth-client";
-import { Search, Settings, User } from "lucide-react";
+import { Menu, Search, Settings, User } from "lucide-react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { menuData } from "../data/sidebar-menu-data";
+import Sidebar from "./sidebar";
 
 export default function AdminHeader() {
   const { data: session } = authClient.useSession();
+  const pathname = usePathname();
+
+  const newPathName = menuData.map((d) =>
+    pathname.toLowerCase().includes(d.title.toLowerCase()) ? d.title : "",
+  );
 
   return (
-    <header className="sticky bg-card h-fit top-0 z-50 w-full border-b border-border shadow-sm px-4 md:px-6 py-3">
-      <div className="mx-auto flex items-center justify-between gap-4">
-        {/* Page Title in Desktop */}
-        <div className="h-10 md:hidden w-10">
-          <Image
-            src="/PollenPop.png"
-            alt="pollenpop"
-            height={100}
-            width={100}
-            className="object-cover h-full w-full"
-          />
-        </div>
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card px-4 sm:px-6 shadow-sm">
+      {/* Mobile Menu Button - Only visible on mobile */}
+      <Drawer direction="left">
+        <DrawerTrigger asChild>
+          <button className="sm:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <Menu className="w-6 h-6 text-gray-600" />
+          </button>
+        </DrawerTrigger>
+        <DrawerContent className="w-70 max-w-[85vw] h-full rounded-none m-0 p-0">
+          <Sidebar isMobile onClose={() => {}} />
+        </DrawerContent>
+      </Drawer>
 
+      <h1 className="text-xl font-bold text-card-foreground">{newPathName}</h1>
+
+      {/* Desktop Search/Actions - Only visible on desktop */}
+      <div className="hidden sm:flex items-center gap-4 ml-auto">
         {/* Middle: Search Bar */}
         <div className="flex flex-1 max-w-md relative">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">

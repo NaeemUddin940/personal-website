@@ -10,18 +10,12 @@ export default function CategoryHeader({
   showPreview,
   setShowPreview,
   isSubmitting,
-  handleSave,
-  steps,
-  setCurrentStep,
-  currentStep,
+  // handleSave,
 }: {
   showPreview: boolean;
   setShowPreview: (show: boolean) => void;
   isSubmitting: any;
   handleSave: any;
-  steps: any;
-  setCurrentStep: any;
-  currentStep: number;
 }) {
   return (
     <>
@@ -67,6 +61,7 @@ export default function CategoryHeader({
                 icon={<HiOutlineSave className="w-4 h-4" />}
                 isLoading={isSubmitting}
                 variant="primary"
+                // action={() => alert("sd")}
               >
                 <span>{isSubmitting ? "Saving..." : "Save"}</span>
               </Button>

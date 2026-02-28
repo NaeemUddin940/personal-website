@@ -118,11 +118,11 @@ export default function CategoryCreatePage() {
             <TabsTrigger icon={HiOutlineFolder} value="basic-info">
               Basic Info
             </TabsTrigger>
-            <TabsTrigger icon={Settings2} value="attribute">
-              Attribute Manage
+            <TabsTrigger icon={Settings2} value="manage-attribute">
+              Manage Attribute
             </TabsTrigger>
-            <TabsTrigger icon={HiOutlinePhotograph} value="seo">
-              Seo
+            <TabsTrigger icon={HiOutlinePhotograph} value="seo-settings">
+              SEO Settings
             </TabsTrigger>
           </TabsList>
 
@@ -136,13 +136,13 @@ export default function CategoryCreatePage() {
                   parentCategories={parentCategories}
                 />
               </TabsContent>
-              <TabsContent value="attribute">
+              <TabsContent value="manage-attribute">
                 <h3 className="text-lg font-semibold">Account Preferences</h3>
                 <p className="text-muted-foreground mt-2">
                   Customize your experience and theme.
                 </p>
               </TabsContent>
-              <TabsContent value="seo">
+              <TabsContent value="seo-settings">
                 <h3 className="text-lg font-semibold">Billing Details</h3>
                 <p className="text-muted-foreground mt-2">
                   Manage your subscriptions and cards.
@@ -157,8 +157,6 @@ export default function CategoryCreatePage() {
               <CategoryCardPreview formData={formData} />
 
               <GoogleSerpPreview formData={formData} />
-
-              {/* <SocialCardPreview formData={formData} /> */}
 
               <AttributesPreview attributes={AVAILABLE_ATTRIBUTES} />
             </div>

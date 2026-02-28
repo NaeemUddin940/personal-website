@@ -50,7 +50,7 @@ export const buttonVariants = {
     danger:
       "bg-rose-500/40 border border-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/30",
     cancel:
-      "hover:bg-rose-100 dark:hover:bg-rose-500 rounded-full transition text-rose-600",
+      "hover:bg-red-500/10 hover:border bg-muted border-red-500 rounded-full transition text-rose-600",
   },
   sizes: {
     default: "px-3 py-2 text-md",
