@@ -8,7 +8,6 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
@@ -25,7 +24,7 @@ type IconType =
   | ReactNode;
 
 export const buttonVariants = {
-  base: "relative inline-flex animate-in fade-in zoom-in whitespace-nowrap items-center justify-center cursor-pointer rounded-md font-bold transition-all duration-200 overflow-hidden focus:outline-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group",
+  base: "relative inline-flex animate-in fade-in zoom-in whitespace-nowrap items-center justify-center cursor-pointer rounded-md font-bold transition-all duration-200 overflow-hidden focus:outline-none active:scale-95 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group",
   variants: {
     default:
       "border border-input-border shadow-sm text-sm text-foreground font-medium",

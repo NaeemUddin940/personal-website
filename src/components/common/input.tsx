@@ -67,9 +67,9 @@ export default function Input({
   const errorMessage = Array.isArray(error) ? error[0] : error;
 
   const baseClasses = `
-    w-full px-4 py-2 rounded-lg transition-all duration-200 outline-none border
+    w-full px-4 py-2.5 rounded-lg transition-all duration-300 outline-none border
     bg-input text-secondary-foreground border-border
-    placeholder:text-muted-foreground
+    placeholder:text-muted-foreground focus:scale-102
     focus:ring-2 focus:ring-primary/30 focus:border-primary
     disabled:opacity-60 disabled:cursor-not-allowed
   `;
@@ -131,12 +131,12 @@ export default function Input({
   };
 
   return (
-    <div className={`flex flex-col gap-1.5 w-full ${containerClassName}`}>
+    <div className={`flex flex-col gap-1.5 group w-full ${containerClassName}`}>
       {label && (
         <div className="flex items-center justify-between">
           <label
             htmlFor={inputId}
-            className="text-sm font-semibold text-foreground/80 cursor-pointer w-fit"
+            className="text-sm font-semibold group-focus-within:text-primary text-foreground/80 cursor-pointer w-fit"
           >
             {label}{" "}
             {required && <span className="text-destructive ml-1">*</span>}

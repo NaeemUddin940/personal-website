@@ -1,15 +1,12 @@
 "use client";
-
 import { cn } from "@/lib/utils";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { LucideIcon } from "lucide-react";
+import { Check } from "lucide-react";
 import React, {
   createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -17,7 +14,7 @@ import React, {
    Types
 ========================================================= */
 
-type TabsVariant = "default" | "underline" | "glass" | "fill";
+type TabsVariant = "default" | "underline" | "glass" | "fill" | "progress";
 type TabsOrientation = "horizontal" | "vertical";
 
 interface TabsContextType {
@@ -26,37 +23,18 @@ interface TabsContextType {
   variant: TabsVariant;
   fullWidth: boolean;
   orientation: TabsOrientation;
+  orderedValues: string[];
 }
 
 interface TabsProps {
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
   variant?: TabsVariant;
   fullWidth?: boolean;
   orientation?: TabsOrientation;
-}
-
-interface TabsListProps {
-  children: ReactNode;
-  className?: string;
-}
-
-interface TabsTriggerProps {
-  value: string;
-  children: ReactNode;
-  className?: string;
-  icon?: LucideIcon;
-  hoveredTab?: string | null;
-  setHoveredTab?: Dispatch<SetStateAction<string | null>>;
-}
-
-interface TabsContentProps {
-  value: string;
-  children: ReactNode;
-  className?: string;
 }
 
 /* =========================================================
@@ -89,6 +67,19 @@ export const Tabs = ({
     value ?? defaultValue ?? "",
   );
 
+  // Extract ordered values for progress logic
+  const orderedValues = useMemo(() => {
+    const listChild = React.Children.toArray(children).find(
+      (child) =>
+        (child as any).type?.name === "TabsList" ||
+        (child as any).type?.displayName === "TabsList",
+    );
+    if (!listChild) return [];
+    return React.Children.toArray((listChild as any).props.children)
+      .filter((c) => React.isValidElement(c))
+      .map((c) => (c as any).props.value);
+  }, [children]);
+
   useEffect(() => {
     if (value !== undefined) setActiveTab(value);
   }, [value]);
@@ -100,12 +91,19 @@ export const Tabs = ({
 
   return (
     <TabsContext.Provider
-      value={{ activeTab, handleTabChange, variant, fullWidth, orientation }}
+      value={{
+        activeTab,
+        handleTabChange,
+        variant,
+        fullWidth,
+        orientation,
+        orderedValues,
+      }}
     >
       <div
         className={cn(
           "flex",
-          orientation === "horizontal" ? "flex-col" : "flex-row gap-4",
+          orientation === "horizontal" ? "flex-col" : "flex-row gap-8",
           fullWidth && "w-full",
           className,
         )}
@@ -120,10 +118,15 @@ export const Tabs = ({
    2️⃣ Tabs List
 ========================================================= */
 
-export const TabsList = ({ children, className }: TabsListProps) => {
+export const TabsList = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
   const { variant, fullWidth, orientation } = useTabs();
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
-
   const isVertical = orientation === "vertical";
 
   const listVariants: Record<TabsVariant, string> = {
@@ -145,6 +148,10 @@ export const TabsList = ({ children, className }: TabsListProps) => {
       "bg-slate-100 dark:bg-slate-800 rounded-xl p-2 border border-border gap-1",
       isVertical ? "flex-col w-48" : "flex-row",
     ),
+    progress: cn(
+      "bg-transparent gap-0 items-start",
+      isVertical ? "flex-col" : "flex-row justify-center",
+    ),
   };
 
   return (
@@ -158,11 +165,16 @@ export const TabsList = ({ children, className }: TabsListProps) => {
       )}
     >
       <LayoutGroup id="tabs-group">
-        {React.Children.map(children, (child) => {
+        {React.Children.map(children, (child, index) => {
           if (!React.isValidElement(child)) return null;
-          return React.cloneElement(
-            child as React.ReactElement<TabsTriggerProps>,
-            { hoveredTab, setHoveredTab },
+          return (
+            <React.Fragment>
+              {React.cloneElement(child as any, {
+                hoveredTab,
+                setHoveredTab,
+                index,
+              })}
+            </React.Fragment>
           );
         })}
       </LayoutGroup>
@@ -174,6 +186,16 @@ export const TabsList = ({ children, className }: TabsListProps) => {
    3️⃣ Tabs Trigger
 ========================================================= */
 
+interface TabsTriggerProps {
+  value: string;
+  children: React.ReactNode;
+  className?: string;
+  icon?: ElementType | ReactElement;
+  hoveredTab?: string | null;
+  setHoveredTab?: (val: string | null) => void;
+  index?: number;
+}
+
 export const TabsTrigger = ({
   value,
   children,
@@ -181,63 +203,111 @@ export const TabsTrigger = ({
   icon: Icon,
   hoveredTab,
   setHoveredTab,
+  index = 0,
 }: TabsTriggerProps) => {
-  const { activeTab, handleTabChange, variant, fullWidth, orientation } =
-    useTabs();
+  const {
+    activeTab,
+    handleTabChange,
+    variant,
+    fullWidth,
+    orientation,
+    orderedValues,
+  } = useTabs();
 
   const isActive = activeTab === value;
   const isHovered = hoveredTab === value;
   const isVertical = orientation === "vertical";
 
+  // Progress Logic
+  const activeIndex = orderedValues.indexOf(activeTab);
+  const currentIndex = orderedValues.indexOf(value);
+  const isCompleted = currentIndex < activeIndex;
+  const isLast = index === orderedValues.length - 1;
+
+  if (variant === "progress") {
+    return (
+      <div
+        className={cn(
+          "flex items-start",
+          isVertical ? "flex-col w-full" : "flex-row items-center",
+        )}
+      >
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            onClick={() => handleTabChange(value)}
+            onMouseEnter={() => setHoveredTab?.(value)}
+            className={cn(
+              "relative z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 outline-none cursor-pointer border-2",
+              isActive || isCompleted
+                ? "bg-primary text-primary-foreground shadow-lg border-primary shadow-primary/10"
+                : "bg-background text-background-foreground border-2 border-border",
+            )}
+          >
+            {isCompleted ? (
+              <Check className="w-5 h-5 stroke-3" />
+            ) : Icon ? (
+              <Icon className="w-5 h-5" />
+            ) : (
+              <span className="text-sm font-bold">{currentIndex + 1}</span>
+            )}
+          </button>
+
+          <span
+            className={cn(
+              "mt-2 text-xs font-semibold transition-colors duration-300",
+              isActive || isCompleted
+                ? "text-primary"
+                : "text-muted-foreground",
+            )}
+          >
+            {children}
+          </span>
+        </div>
+
+        {!isLast && (
+          <div
+            className={cn(
+              "relative bg-border transition-colors duration-300",
+              isVertical
+                ? "w-0.5 h-12 ml-5 my-1"
+                : "w-16 sm:w-24 h-0.5 mx-2 -mt-6",
+            )}
+          >
+            <motion.div
+              initial={false}
+              animate={{
+                [isVertical ? "height" : "width"]: isCompleted ? "100%" : "0%",
+              }}
+              className="absolute inset-0 bg-primary"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Standard Variants logic
   const variantStyles: Record<TabsVariant, string> = {
     default: cn(
       "px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-      isVertical && "w-full justify-start",
       isActive
         ? "text-slate-900 dark:text-white"
-        : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+        : "text-slate-500 dark:text-slate-400",
     ),
     underline: cn(
-      "text-sm font-medium transition-colors duration-200 relative",
-      isVertical ? "px-4 py-2 w-full justify-start" : "px-2 py-3",
+      "px-4 py-2 text-sm font-medium transition-colors duration-200 relative",
       isActive ? "text-primary" : "text-muted-foreground",
     ),
     glass: cn(
-      "px-6 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200",
-      isVertical && "w-full justify-start",
-      isActive ? "text-white scale-[1.02]" : "text-white/60 hover:text-white",
+      "px-6 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white",
+      isActive && "text-white",
     ),
     fill: cn(
-      "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-      isVertical && "w-full justify-start",
-      isActive
-        ? "bg-primary text-primary-foreground"
-        : "bg-transparent text-muted-foreground hover:bg-muted/10 hover:text-primary",
+      "px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground",
+      isActive && "bg-primary text-primary-foreground",
     ),
-  };
-
-  const activeIndicator: Record<TabsVariant, string> = {
-    default: "bg-white dark:bg-slate-600 shadow-sm rounded-lg",
-    underline: cn(
-      "bg-primary",
-      isVertical
-        ? "absolute right-[-9px] top-0 bottom-0 w-[2px] rounded-none"
-        : "absolute bottom-[-10px] left-0 right-0 h-[2px] rounded-none",
-    ),
-    glass: "bg-white/10 shadow-md rounded-xl",
-    fill: "bg-primary shadow-lg rounded-lg",
-  };
-
-  const hoverIndicator: Record<TabsVariant, string> = {
-    default: "bg-white/80 dark:bg-slate-700/80 shadow-none rounded-lg",
-    underline: cn(
-      "bg-slate-200/80 dark:bg-white/5",
-      isVertical
-        ? "absolute right-[-9px] top-0 bottom-0 w-[1px]"
-        : "absolute bottom-[-10px] left-0 right-0 h-[1px]",
-    ),
-    glass: "bg-white/5 rounded-xl",
-    fill: "bg-primary/20 rounded-lg",
+    progress: "",
   };
 
   return (
@@ -246,7 +316,7 @@ export const TabsTrigger = ({
       onClick={() => handleTabChange(value)}
       onMouseEnter={() => setHoveredTab?.(value)}
       className={cn(
-        "relative flex items-center gap-2 outline-none cursor-pointer z-10",
+        "relative flex items-center gap-2 outline-none cursor-pointer z-10 whitespace-nowrap",
         fullWidth && !isVertical && "flex-1",
         variantStyles[variant],
         className,
@@ -255,26 +325,44 @@ export const TabsTrigger = ({
       {isHovered && !isActive && (
         <motion.div
           layoutId="hover-pill"
-          className={cn("absolute inset-0 z-[-1]", hoverIndicator[variant])}
-          initial={false}
+          className={cn(
+            "absolute inset-0 z-[-1] rounded-lg bg-slate-200/50 dark:bg-white/5",
+          )}
           transition={{ type: "spring", stiffness: 400, damping: 35 }}
         />
       )}
 
-      {isActive && (
+      {isActive && variant === "underline" && (
         <motion.div
-          layoutId="active-pill"
+          layoutId="active-underline"
           className={cn(
-            variant === "underline" ? "" : "absolute inset-0 z-[-1]",
-            activeIndicator[variant],
+            "absolute bg-primary",
+            isVertical
+              ? "-right-2.25 top-0 bottom-0 w-0.5"
+              : "-bottom-2.25 left-0 right-0 h-0.5",
           )}
-          initial={false}
-          transition={{ type: "spring", stiffness: 380, damping: 30 }}
         />
       )}
 
-      <span className="relative flex items-center gap-2 whitespace-nowrap">
-        {Icon}
+      {isActive && variant !== "underline" && (
+        <motion.div
+          layoutId="active-pill"
+          className={cn(
+            "absolute inset-0 z-[-1] rounded-lg shadow-sm",
+            variant === "default" && "bg-white dark:bg-slate-600",
+            variant === "glass" && "bg-white/10 shadow-md",
+            variant === "fill" && "bg-primary",
+          )}
+        />
+      )}
+
+      <span className="flex items-center gap-2">
+        {Icon && React.isValidElement(Icon) ? (
+          Icon
+        ) : (
+          <Icon className="w-5 h-5" />
+        )}
+        {/* {Icon && <Icon className="w-4 h-4" />} */}
         {children}
       </span>
     </button>
@@ -289,7 +377,11 @@ export const TabsContent = ({
   value,
   children,
   className,
-}: TabsContentProps) => {
+}: {
+  value: string;
+  children: React.ReactNode;
+  className?: string;
+}) => {
   const { activeTab, orientation } = useTabs();
   const isActive = activeTab === value;
   const isVertical = orientation === "vertical";
@@ -301,21 +393,16 @@ export const TabsContent = ({
           key={value}
           initial={{
             opacity: 0,
-            x: isVertical ? 20 : 0,
-            y: isVertical ? 0 : 20,
+            x: isVertical ? 10 : 0,
+            y: isVertical ? 0 : 10,
           }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           exit={{
             opacity: 0,
-            x: isVertical ? 20 : 0,
-            y: isVertical ? 0 : 20,
+            x: isVertical ? -10 : 0,
+            y: isVertical ? 0 : -10,
           }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className={cn(
-            "outline-none w-full",
-            !isVertical && "mt-4",
-            className,
-          )}
+          className={cn("w-full py-4", className)}
         >
           {children}
         </motion.div>

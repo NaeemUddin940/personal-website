@@ -344,7 +344,7 @@ export function Select({
         </AnimatePresence>
 
         {!iconOnly && (
-          <div className="min-h-5 ml-1">
+          <div className="ml-1">
             {error ? (
               <span
                 role="alert"
@@ -381,7 +381,7 @@ export function Option({ value: itemValue, children, icon }: OptionProps) {
         onSelect(itemValue);
       }}
       className={cn(
-        "flex items-center justify-between gap-3 px-4 py-2.5 text-sm rounded-xl cursor-pointer transition-all mb-0.5 last:mb-0 group outline-none",
+        "flex items-center justify-between gap-3 px-4 py-2.5 text-sm rounded-xl cursor-pointer transition-all mb-0.5  z-9999 last:mb-0 group outline-none",
         isSelected
           ? "bg-primary text-primary-foreground font-bold"
           : "text-foreground/80 hover:bg-primary/10 hover:text-primary",

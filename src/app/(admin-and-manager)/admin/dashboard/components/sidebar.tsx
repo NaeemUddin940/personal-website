@@ -7,6 +7,7 @@ import {
   ChevronRight,
   CreditCard,
   Home,
+  Layers,
   Menu,
   MinusSquare,
   Settings,
@@ -162,32 +163,33 @@ const menuData = [
     children: [
       { id: "2-1", title: "All Products", link: "/admin/products" },
       { id: "2-2", title: "Add Product", link: "/admin/products/add" },
+      { id: "2-5", title: "Inventory", link: "/admin/inventory" },
+    ],
+  },
+  {
+    id: "2-3",
+    title: "Categories",
+    icon: <Layers Box size={20}/>,
+    link: "/admin/categories",
+    children: [
       {
-        id: "2-3",
-        title: "Categories",
-        link: "/admin/categories",
+        id: "2-3-1",
+        title: "Create",
+        link: "/admin/categories/create",
+      },
+      {
+        id: "2-3-2",
+        title: "Clothing",
+        link: "/admin/categories/clothing",
         children: [
+          { id: "2-3-2-1", title: "Men's Wear", link: "/admin/cat/men" },
           {
-            id: "2-3-1",
-            title: "Electronics",
-            link: "/admin/categories/electronics",
-          },
-          {
-            id: "2-3-2",
-            title: "Clothing",
-            link: "/admin/categories/clothing",
-            children: [
-              { id: "2-3-2-1", title: "Men's Wear", link: "/admin/cat/men" },
-              {
-                id: "2-3-2-2",
-                title: "Women's Wear",
-                link: "/admin/cat/women",
-              },
-            ],
+            id: "2-3-2-2",
+            title: "Women's Wear",
+            link: "/admin/cat/women",
           },
         ],
       },
-      { id: "2-5", title: "Inventory", link: "/admin/inventory" },
     ],
   },
   {

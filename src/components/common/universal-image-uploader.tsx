@@ -217,7 +217,7 @@ export const UniversalImageUploader: React.FC<ImageUploaderProps> = ({
   return (
     <div className={`inline-flex flex-col max-w-full font-sans ${className}`}>
       {/* Label & Stats - Ekhon wrapper size onujayi thakbe */}
-      <div className="flex items-center justify-between mb-3 px-1 w-full overflow-hidden">
+      <div className="flex items-center justify-between mb-1 px-1 w-full overflow-hidden">
         {label && (
           <label className="text-sm font-bold text-foreground opacity-80 truncate mr-2">
             {label}
