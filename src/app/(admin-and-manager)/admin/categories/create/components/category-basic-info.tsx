@@ -2,7 +2,7 @@
 import Input from "@/components/common/input";
 import { SectionHeader } from "@/components/common/section-header";
 import { UniversalImageUploader } from "@/components/common/universal-image-uploader";
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Option, Select } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { HiOutlineFolder } from "react-icons/hi";
@@ -72,7 +72,7 @@ export default function CategoryBasicInfo({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Select
                 label="Parent Category"
                 name="parentId"
@@ -106,6 +106,29 @@ export default function CategoryBasicInfo({
                 placeholder="0"
                 min={0}
               />
+
+              <Select
+                label="Category Status"
+                name="staus"
+                value={formData.status}
+                onChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    status: value,
+                  })
+                }
+              >
+                {[
+                  { value: "active", label: "Active" },
+                  { value: "inactive", label: "Inactive" },
+                  { value: "draft", label: "Draft" },
+                  { value: "archive", label: "Archive" },
+                ].map((status) => (
+                  <Option key={status.value} value={status.value}>
+                    {status.label}
+                  </Option>
+                ))}
+              </Select>
             </div>
           </div>
         </Card>

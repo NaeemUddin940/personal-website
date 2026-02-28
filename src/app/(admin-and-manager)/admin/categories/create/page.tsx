@@ -2,16 +2,19 @@
 import { CategoryForm } from "@/@types/category-form.";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion } from "framer-motion";
 import { Settings2 } from "lucide-react";
 import { useState } from "react";
 import { HiOutlineFolder, HiOutlinePhotograph } from "react-icons/hi";
 import CategoryHeader from "./category-header";
+import AttributeManagement from "./components/attribute-management";
 import CategoryBasicInfo from "./components/category-basic-info";
 import AttributesPreview from "./components/previews/attributes-preview";
 import CategoryCardPreview from "./components/previews/category-card-preview";
 import GoogleSerpPreview from "./components/previews/google-serp-preview";
 import QuickTips from "./components/previews/quick-tips";
 import SocialCardPreview from "./components/previews/social-card-preview";
+import SeoSettings from "./components/seo-settings";
 
 const AVAILABLE_ATTRIBUTES: AvailableAttribute[] = [
   {
@@ -75,12 +78,15 @@ const AVAILABLE_ATTRIBUTES: AvailableAttribute[] = [
 ];
 
 export default function CategoryCreatePage() {
+  
+
   const [formData, setFormData] = useState<CategoryForm>({
     name: "",
     slug: "",
     description: "",
     parentId: "",
     image: "",
+    status: "draft",
     sortOrder: 0,
     seo: {
       metaTitle: "",
@@ -126,7 +132,7 @@ export default function CategoryCreatePage() {
             </TabsTrigger>
           </TabsList>
 
-          <section className="grid grid-cols-1 lg:grid-cols-7 gap-5 w-full">
+          <section className="grid grid-cols-1 lg:grid-cols-7 gap-5 mb-5 w-full">
             <div className="col-span-5">
               <TabsContent value="basic-info">
                 <CategoryBasicInfo
@@ -137,29 +143,34 @@ export default function CategoryCreatePage() {
                 />
               </TabsContent>
               <TabsContent value="manage-attribute">
-                <h3 className="text-lg font-semibold">Account Preferences</h3>
-                <p className="text-muted-foreground mt-2">
-                  Customize your experience and theme.
-                </p>
+                <AttributeManagement
+                  formData={formData}
+                  setFormData={setFormData}
+                />
               </TabsContent>
               <TabsContent value="seo-settings">
-                <h3 className="text-lg font-semibold">Billing Details</h3>
-                <p className="text-muted-foreground mt-2">
-                  Manage your subscriptions and cards.
-                </p>
+                <SeoSettings formData={formData} setFormData={setFormData} />
               </TabsContent>
-              <div className="grid grid-cols-2 gap-5">
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="grid grid-cols-2 gap-5"
+              >
                 <SocialCardPreview formData={formData} />
                 <QuickTips />
-              </div>
+              </motion.div>
             </div>
-            <div className="col-span-2 mt-5 space-y-3">
+            <motion.div
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="col-span-2 mt-5 space-y-3"
+            >
               <CategoryCardPreview formData={formData} />
 
               <GoogleSerpPreview formData={formData} />
 
               <AttributesPreview attributes={AVAILABLE_ATTRIBUTES} />
-            </div>
+            </motion.div>
           </section>
         </Tabs>
       </Card>

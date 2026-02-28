@@ -1,5 +1,5 @@
 "use client";
-import { Monitor, Moon, Sun, User } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Option, Select } from "./select";
 import { useTheme } from "./theme-provider";
