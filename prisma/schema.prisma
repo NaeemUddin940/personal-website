@@ -21,28 +21,28 @@ enum GENDER {
 }
 
 model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  dob           DateTime?
-  phone         String?
-  gender        GENDER?
-  image         String?   @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD2QGQa0Vn4OXoHwYnKMpXsyKKobQ7izCGzA&s")
+  id     String    @id
+  name   String
+  email  String    @unique
+  dob    DateTime?
+  phone  String?
+  gender GENDER?
+  image  String?   @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD2QGQa0Vn4OXoHwYnKMpXsyKKobQ7izCGzA&s")
 
   // Role & Status
-  role          String    @default("user")
-  emailVerified         Boolean   @default(false)
-  phoneVerified         Boolean   @default(false)
-  isBlocked             Boolean   @default(false)
-  isDeleted             Boolean   @default(false)
+  role          String  @default("user")
+  emailVerified Boolean @default(false)
+  phoneVerified Boolean @default(false)
+  isBlocked     Boolean @default(false)
+  isDeleted     Boolean @default(false)
 
   // Security
-  failedLoginAttempts   Int       @default(0)
-  accountLockedUntil    DateTime?
-  lastLoginAt           DateTime?
+  failedLoginAttempts Int       @default(0)
+  accountLockedUntil  DateTime?
+  lastLoginAt         DateTime?
 
   // Relations
-  shippingAddresses     ShippingAddress[]
+  shippingAddresses ShippingAddress[]
   // orders                Order[]
   // cart                  Cart?
   // wishlist              Wishlist[]
@@ -51,10 +51,10 @@ model User {
   // questions             Question[]
   // answers               Answer[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sessions  Session[]
+  accounts  Account[]
 
   @@map("user")
 }
@@ -73,19 +73,19 @@ model ShippingAddress {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // কন্টাক্ট ইনফরমেশন
-  fullName     String @map("full_name")
-  phone        String @map("phone")
-  
+  fullName String @map("full_name")
+  phone    String @map("phone")
+
   // অ্যাড্রেস ফিল্ডস
-  addressLine1 String @map("address_line1")
+  addressLine1 String  @map("address_line1")
   addressLine2 String? @map("address_line2")
-  city         String @map("city")
-  state        String @map("state")
-  postalCode   String @map("postal_code")
-  country      String @map("country") @default("Bangladesh")
-  
+  city         String  @map("city")
+  state        String  @map("state")
+  postalCode   String  @map("postal_code")
+  country      String  @default("Bangladesh") @map("country")
+
   // অ্যাড্রেস টাইপ এনাম ব্যবহার করা ভালো
-  addressType  AddressType @default(HOME) @map("address_type")
+  addressType AddressType @default(HOME) @map("address_type")
 
   // ডিফল্ট অ্যাড্রেস
   isDefault Boolean @default(false) @map("is_default")
@@ -103,7 +103,6 @@ model ShippingAddress {
   @@index([isDefault])
   @@index([city, state])
   @@index([phone])
-  
   // টেবিলের নাম
   @@map("shipping_addresses")
 }
@@ -159,78 +158,78 @@ model Verification {
 // ==================== ATTRIBUTE ENUMS ====================
 
 enum AttributeType {
-  TEXT        // Simple text input
-  TEXTAREA    // Multi-line text
-  NUMBER      // Numeric value
-  BOOLEAN     // Yes/No
-  SELECT      // Single select dropdown
+  TEXT // Simple text input
+  TEXTAREA // Multi-line text
+  NUMBER // Numeric value
+  BOOLEAN // Yes/No
+  SELECT // Single select dropdown
   MULTISELECT // Multiple select
-  RADIO       // Radio buttons
-  CHECKBOX    // Checkbox group
-  COLOR       // Color picker
-  SIZE        // Size chart
-  IMAGE       // Image upload
-  FILE        // File upload
-  DATE        // Date picker
-  DATETIME    // Date & time
-  RANGE       // Range slider (min-max)
-  PRICE       // Price value
-  PERCENTAGE  // Percentage value
-  WEIGHT      // Weight with unit
-  DIMENSION   // Length, width, height
-  URL         // Link/URL
-  EMAIL       // Email address
-  PHONE       // Phone number
-  RATING      // Rating (1-5)
-  JSON        // Complex JSON data
+  RADIO // Radio buttons
+  CHECKBOX // Checkbox group
+  COLOR // Color picker
+  SIZE // Size chart
+  IMAGE // Image upload
+  FILE // File upload
+  DATE // Date picker
+  DATETIME // Date & time
+  RANGE // Range slider (min-max)
+  PRICE // Price value
+  PERCENTAGE // Percentage value
+  WEIGHT // Weight with unit
+  DIMENSION // Length, width, height
+  URL // Link/URL
+  EMAIL // Email address
+  PHONE // Phone number
+  RATING // Rating (1-5)
+  JSON // Complex JSON data
 }
 
 enum SwatchType {
-  COLOR       // Color swatch (#FF0000)
-  IMAGE       // Image swatch (URL)
-  TEXT        // Text swatch (S, M, L)
-  ICON        // Icon swatch
-  GRADIENT    // Gradient color
-  PATTERN     // Pattern image
+  COLOR // Color swatch (#FF0000)
+  IMAGE // Image swatch (URL)
+  TEXT // Text swatch (S, M, L)
+  ICON // Icon swatch
+  GRADIENT // Gradient color
+  PATTERN // Pattern image
 }
 
 enum AttributeGroup {
-  BASIC           // Basic information
-  TECHNICAL       // Technical specifications
-  PHYSICAL        // Physical attributes (weight, dimensions)
-  PACKAGING       // Package details
-  WARRANTY        // Warranty information
-  SHIPPING        // Shipping details
-  SEO             // SEO meta data
-  MARKETING       // Marketing attributes
-  INVENTORY       // Stock attributes
-  PRICING         // Price related
-  CUSTOM          // Custom attributes
+  BASIC // Basic information
+  TECHNICAL // Technical specifications
+  PHYSICAL // Physical attributes (weight, dimensions)
+  PACKAGING // Package details
+  WARRANTY // Warranty information
+  SHIPPING // Shipping details
+  SEO // SEO meta data
+  MARKETING // Marketing attributes
+  INVENTORY // Stock attributes
+  PRICING // Price related
+  CUSTOM // Custom attributes
 }
 
 enum AttributeValidation {
-  REQUIRED        // Field is required
-  UNIQUE          // Value must be unique
-  MIN_LENGTH      // Minimum length
-  MAX_LENGTH      // Maximum length
-  MIN_VALUE       // Minimum value
-  MAX_VALUE       // Maximum value
-  PATTERN         // Regex pattern
-  EMAIL           // Valid email
-  URL             // Valid URL
-  PHONE           // Valid phone number
+  REQUIRED // Field is required
+  UNIQUE // Value must be unique
+  MIN_LENGTH // Minimum length
+  MAX_LENGTH // Maximum length
+  MIN_VALUE // Minimum value
+  MAX_VALUE // Maximum value
+  PATTERN // Regex pattern
+  EMAIL // Valid email
+  URL // Valid URL
+  PHONE // Valid phone number
   IMAGE_DIMENSION // Image width x height
-  FILE_SIZE       // Max file size
-  FILE_TYPE       // Allowed file types
-  CUSTOM          // Custom validation
+  FILE_SIZE // Max file size
+  FILE_TYPE // Allowed file types
+  CUSTOM // Custom validation
 }
 
 enum AttributeVisibility {
-  PUBLIC          // Visible to everyone
-  PRIVATE         // Only admin
-  HIDDEN          // Hidden from all
-  SELLER_ONLY     // Only seller (for multi-vendor)
-  BUYER_ONLY      // Only buyer
+  PUBLIC // Visible to everyone
+  PRIVATE // Only admin
+  HIDDEN // Hidden from all
+  SELLER_ONLY // Only seller (for multi-vendor)
+  BUYER_ONLY // Only buyer
 }
 
 enum AttributeStatus {
@@ -240,70 +239,71 @@ enum AttributeStatus {
   ARCHIVED
 }
 
-
 // ==================== ATTRIBUTE MODELS ====================
 
 model Attribute {
-  id              String        @id @default(cuid())
-  name            String
-  slug            String        @unique
-  type            AttributeType
-  group           AttributeGroup @default(BASIC)
-  
+  id    String         @id @default(cuid())
+  name  String
+  slug  String         @unique
+  type  AttributeType
+  group AttributeGroup @default(BASIC)
+
   // Display settings
-  label           String?       // Display label
-  placeholder     String?       // Placeholder text
-  helpText        String?       @map("help_text") // Help text/tooltip
-  unit            String?       // kg, cm, px, etc.
-  unitPosition    String?       @map("unit_position") // prefix/suffix
-  
+  label        String? // Display label
+  placeholder  String? // Placeholder text
+  helpText     String? @map("help_text") // Help text/tooltip
+  unit         String? // kg, cm, px, etc.
+  unitPosition String? @map("unit_position") // prefix/suffix
+
   // Options for select/multiselect
-  options         Json?         // [{value: "red", label: "Red"}]
-  
+  options Json? // [{value: "red", label: "Red"}]
+
   // Validation rules
-  validations     Json?         // Array of validation rules
-  
+  validations Json? // Array of validation rules
+
   // Numeric constraints
-  minValue        Float?        @map("min_value")
-  maxValue        Float?        @map("max_value")
-  minLength       Int?          @map("min_length")
-  maxLength       Int?          @map("max_length")
-  stepValue       Float?        @default(1) @map("step_value")
-  decimalPlaces   Int?          @default(0) @map("decimal_places")
-  
+  minValue      Float? @map("min_value")
+  maxValue      Float? @map("max_value")
+  minLength     Int?   @map("min_length")
+  maxLength     Int?   @map("max_length")
+  stepValue     Float? @default(1) @map("step_value")
+  decimalPlaces Int?   @default(0) @map("decimal_places")
+
   // Boolean settings
-  isRequired      Boolean       @default(false) @map("is_required")
-  isUnique        Boolean       @default(false) @map("is_unique")
-  isFilterable    Boolean       @default(true) @map("is_filterable")
-  isVisible       Boolean       @default(true) @map("is_visible")
-  isVariation     Boolean       @default(false) @map("is_variation") // For product variations
-  isSearchable    Boolean       @default(true) @map("is_searchable")
-  isComparable    Boolean       @default(true) @map("is_comparable")
-  
+  isRequired   Boolean @default(false) @map("is_required")
+  isUnique     Boolean @default(false) @map("is_unique")
+  isFilterable Boolean @default(true) @map("is_filterable")
+  isVisible    Boolean @default(true) @map("is_visible")
+  isVariation  Boolean @default(false) @map("is_variation") // For product variations
+  isSearchable Boolean @default(true) @map("is_searchable")
+  isGlobal     Boolean @default(true) @map("is_global")
+
   // UI settings
-  sortOrder       Int           @default(0) @map("sort_order")
-  visibility      AttributeVisibility @default(PUBLIC)
-  cssClass        String?       @map("css_class")
-  icon            String?
-  
+  sortOrder  Int                 @default(0) @map("sort_order")
+  visibility AttributeVisibility @default(PUBLIC)
+  cssClass   String?             @map("css_class")
+  icon       String?
+
   // Status
-  status          AttributeStatus @default(ACTIVE)
-  
+  status AttributeStatus @default(ACTIVE)
+
   // Meta data
-  metaData        Json?         @map("meta_data") // Additional data
-  
+  metaData Json? @map("meta_data") // Additional data
+
   // Relations
-  values          AttributeValue[]
-  categories      CategoryAttribute[]
+  values           AttributeValue[]
+  categories       CategoryAttribute[]
+  originCategory   Category?           @relation("OriginCategoryAttributes", fields: [originCategoryId], references: [id])
+  originCategoryId String?
   // products        ProductAttribute[]
   // variations      VariationAttribute[]
-  
+
   // System
-  createdBy       String?       @map("created_by")
-  updatedBy       String?       @map("updated_by")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-  deletedAt       DateTime?     @map("deleted_at")
+  createdBy String?   @map("created_by")
+  updatedBy String?   @map("updated_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   @@index([slug])
   @@index([type])
@@ -313,40 +313,40 @@ model Attribute {
 }
 
 model AttributeValue {
-  id              String        @id @default(cuid())
-  attributeId     String        @map("attribute_id")
-  attribute       Attribute     @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  
+  id          String    @id @default(cuid())
+  attributeId String    @map("attribute_id")
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
   // Value
-  value           String        // Display value
-  slug            String        // URL friendly value
-  
+  value String // Display value
+  slug  String // URL friendly value
+
   // Swatch for visual attributes
-  swatchType      SwatchType?   @map("swatch_type")
-  swatchValue     String?       @map("swatch_value") // Hex code, image URL, etc.
-  
+  swatchType  SwatchType? @map("swatch_type")
+  swatchValue String?     @map("swatch_value") // Hex code, image URL, etc.
+
   // Additional data
-  description     String?       // Description of this value
-  image           String?       // Image for this value
-  colorCode       String?       @map("color_code") // Hex color code
-  metadata        Json?         // Additional metadata
-  
+  description String? // Description of this value
+  image       String? // Image for this value
+  colorCode   String? @map("color_code") // Hex color code
+  metadata    Json? // Additional metadata
+
   // Sorting
-  sortOrder       Int           @default(0) @map("sort_order")
-  
+  sortOrder Int @default(0) @map("sort_order")
+
   // Status
-  isActive        Boolean       @default(true) @map("is_active")
-  isDefault       Boolean       @default(false) @map("is_default")
-  
+  isActive  Boolean @default(true) @map("is_active")
+  isDefault Boolean @default(false) @map("is_default")
+
   // Relations
   // products        ProductAttribute[]
   // variations      VariationAttribute[]
-  
+
   // System
-  createdBy       String?       @map("created_by")
-  updatedBy       String?       @map("updated_by")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  createdBy String?  @map("created_by")
+  updatedBy String?  @map("updated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([attributeId, slug])
   @@index([attributeId])
@@ -354,103 +354,101 @@ model AttributeValue {
   @@map("attribute_values")
 }
 
-
 // =================== Category Models ======================
 enum CategoryStatus {
   active
   inactive
   archive
   draft
-} 
+}
 
+// =================== Category ↔ Attribute Relationship (with overrides) ======================
+
+model CategoryAttribute {
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  attributeId String
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  // ── Fields that CAN be overridden per category ───────────────────────
+  isRequired       Boolean  @default(false) @map("is_required")
+  sortOrder        Int      @default(0) @map("sort_order")
+  overrideLabel    String? // e.g. "Clothing Color" instead of "Color"
+  overrideHelpText String?
+  isFilterable     Boolean? // can differ from global setting
+  isVisible        Boolean  @default(true)
+
+  // defaultValue as Json so it supports string/number/boolean/select-value/etc.
+  defaultValue Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([categoryId, attributeId])
+  @@index([categoryId])
+  @@index([attributeId])
+  @@index([sortOrder])
+  @@map("category_attributes")
+}
+
+// =================== Category ======================
 model Category {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
   description String?
 
-  status      CategoryStatus @default(draft)
+  status CategoryStatus @default(draft)
 
-  parentId    String?
-  parent      Category?      @relation("CategoryToCategory", fields: [parentId], references: [id])
-  children    Category[]     @relation("CategoryToCategory")
+  parentId String?
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToCategory")
 
-  image       String?
-  sortOrder   Int            @default(0)
+  image     String?
+  sortOrder Int     @default(0)
 
-  attributes  CategoryAttribute[]
+  // Attributes attached to this category (with possible overrides)
+  attributes CategoryAttribute[]
 
-  seo         CategorySeo?
+  // Attributes that were *created* here before being promoted to global
+  createdAttributes Attribute[] @relation("OriginCategoryAttributes")
 
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  deletedAt   DateTime?
+  seo CategorySeo?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([slug])
   @@index([parentId])
+  @@index([sortOrder])
 }
 
+// =================== Category SEO ======================
 model CategorySeo {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  categoryId      String   @unique
-  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String   @unique
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   metaTitle       String?
   metaDescription String?
   metaKeywords    String?
   canonicalUrl    String?
-  robots          String?  @default("index,follow")
 
-  ogTitle         String?
-  ogDescription   String?
-  ogImage         String?
+  robots String? @default("index,follow")
 
-  structuredData  Json?
-  metaData        Json?
+  ogTitle       String?
+  ogDescription String?
+  ogImage       String?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  structuredData Json?
+  metaData       Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([categoryId])
-}
-
-
-model CategoryAttribute {
-  categoryId      String        @map("category_id")
-  category        Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  attributeId     String        @map("attribute_id")
-  attribute       Attribute     @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  isRequired      Boolean       @default(false) @map("is_required")
-  sortOrder       Int           @default(0) @map("sort_order")
-  createdAt       DateTime      @default(now()) @map("created_at")
-
-  @@id([categoryId, attributeId])
-  @@index([categoryId])
-  @@index([attributeId])
-  @@map("category_attributes")
-}
-
-
-// SEO
-model Seo {
-  id              String        @id @default(cuid())
-  productId       String?       @unique @map("product_id")
-  // product         Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  // categoryId      String?       @unique @map("category_id")
-  // category        Category?     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  metaTitle       String?       @map("meta_title")
-  metaDescription String?       @map("meta_description")
-  metaKeywords    String?       @map("meta_keywords")
-  canonicalUrl    String?       @map("canonical_url")
-  robots          String?       @default("index,follow")
-  ogTitle         String?       @map("og_title")
-  ogDescription   String?       @map("og_description")
-  ogImage         String?       @map("og_image")
-  structuredData  Json?         @map("structured_data")
-  metaData        Json?         @map("meta_data")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-
-  @@map("seo")
 }

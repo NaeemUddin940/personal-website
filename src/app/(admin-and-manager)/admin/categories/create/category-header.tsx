@@ -1,22 +1,23 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import {
-  HiOutlineArrowLeft,
-  HiOutlineSave,
-  HiOutlineSparkles,
-} from "react-icons/hi";
+import { useFormContext } from "react-hook-form";
+import { HiOutlineArrowLeft, HiOutlineSave } from "react-icons/hi";
 export default function CategoryHeader({
   showPreview,
   setShowPreview,
   isSubmitting,
-  // handleSave,
 }: {
   showPreview: boolean;
   setShowPreview: (show: boolean) => void;
   isSubmitting: any;
-  handleSave: any;
 }) {
+  const {
+    handleSubmit
+  } = useFormContext()
+  function onSubmit(data){
+    console.log(data)
+  }
   return (
     <>
       <motion.div
@@ -44,7 +45,7 @@ export default function CategoryHeader({
             </div>
 
             <div className="flex items-center gap-2">
-              <motion.button
+              {/* <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowPreview(!showPreview)}
@@ -56,14 +57,16 @@ export default function CategoryHeader({
               >
                 <HiOutlineSparkles className="w-4 h-4" />
                 <span>{showPreview ? "Hide Preview" : "Preview"}</span>
-              </motion.button>
+              </motion.button> */}
               <Button
                 icon={<HiOutlineSave className="w-4 h-4" />}
-                isLoading={isSubmitting}
+                // isLoading={isSubmitting}
                 variant="primary"
-                // action={() => alert("sd")}
+                type="submit"
+                onClick={handleSubmit(onSubmit)}
               >
-                <span>{isSubmitting ? "Saving..." : "Save"}</span>
+                sdj
+                {/* <span>{isSubmitting ? "Saving..." : "Save"}</span> */}
               </Button>
             </div>
           </div>

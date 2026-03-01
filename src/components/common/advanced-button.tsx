@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/component/ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { Eye, Loader2Icon, Minus, Pencil, Plus, Trash2, X } from "lucide-react";
 import Image from "next/image";

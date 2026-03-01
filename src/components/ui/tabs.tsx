@@ -357,12 +357,8 @@ export const TabsTrigger = ({
       )}
 
       <span className="flex items-center gap-2">
-        {Icon && React.isValidElement(Icon) ? (
-          Icon
-        ) : (
-          <Icon className="w-5 h-5" />
-        )}
-        {/* {Icon && <Icon className="w-4 h-4" />} */}
+        {Icon &&
+          (React.isValidElement(Icon) ? Icon : <Icon className="w-5 h-5" />)}
         {children}
       </span>
     </button>

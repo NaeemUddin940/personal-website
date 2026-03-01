@@ -1,18 +1,24 @@
 "use client";
 import Input from "@/components/common/input";
+import InputField from "@/components/common/input-field";
 import { SectionHeader } from "@/components/common/section-header";
 import { UniversalImageUploader } from "@/components/common/universal-image-uploader";
 import { Card } from "@/components/ui/card";
 import { Option, Select } from "@/components/ui/select";
 import { motion } from "framer-motion";
+import { useFormContext } from "react-hook-form";
 import { HiOutlineFolder } from "react-icons/hi";
 
 export default function CategoryBasicInfo({
   formData,
-  setFormData,
-  handleNameChange,
+  // setFormData,
+  // handleNameChange,
   parentCategories,
 }) {
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext();
   return (
     <div>
       <motion.div
@@ -31,38 +37,45 @@ export default function CategoryBasicInfo({
           />
           <div className="space-y-5">
             <div className="flex items-center justify-between gap-5">
-              <Input
+              <InputField
                 label="Category Name"
                 required
                 name="name"
-                value={formData.name}
-                onChange={handleNameChange}
+                {...register("name")}
+                error={errors?.name}
+                // value={formData.name}
+                // onChange={handleNameChange}
+
                 placeholder="e.g. Summer Collection"
               />
-              <Input
+              <InputField
                 label="URL Slug"
                 required
-                name="slug"
-                value={formData.slug}
-                onChange={(e) =>
-                  setFormData({ ...formData, slug: e.target.value })
-                }
+                // name="slug"
+                {...register("slug")}
+                error={errors?.slug}
+                // value={formData.slug}
+                // onChange={(e) =>
+                  // setFormData({ ...formData, slug: e.target.value })
+                // }
                 placeholder="summer-collection"
               />
             </div>
             <div className="flex items-center justify-between gap-5">
-              <Input
+              <InputField
                 type="textarea"
                 label="Description"
-                name="description"
+                // name="description"
                 rows={9}
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    description: e.target.value,
-                  })
-                }
+                register={register("description")}
+                error={errors?.description}
+                // value={formData.description}
+                // onChange={(e) =>
+                  // setFormData({
+                    // ...formData,
+                  //   description: e.target.value,
+                  // })
+                // }
                 placeholder="Briefly describe what this category contains..."
               />
               <UniversalImageUploader
@@ -75,59 +88,59 @@ export default function CategoryBasicInfo({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Select
                 label="Parent Category"
-                name="parentId"
-                value={formData.parentId}
-                onChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    parentId: value,
-                  })
-                }
+                // name="parentId"
+                // value={formData.parentId}
+                // onChange={(value) =>
+                  // setFormData({
+                    // ...formData,
+                //     parentId: value,
+                //   })
+                // }
               >
-                <Option value="">None (Top Level)</Option>
-                {parentCategories.map((cat) => (
-                  <Option key={cat.id} value={cat.id}>
+                {/* <Option value="">None (Top Level)</Option> */}
+                {/* {parentCategories.map((cat) => (
+                  // <Option key={cat.id} value={cat.id}>
                     {cat.name}
                   </Option>
-                ))}
+                ))} */}
               </Select>
 
-              <Input
+              <InputField
                 type="number"
                 label="Sort Order"
-                name="sortOrder"
-                value={formData.sortOrder}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sortOrder: parseInt(e.target.value) || 0,
-                  })
-                }
+                // name="sortOrder"
+                // value={formData.sortOrder}
+                // onChange={(e) =>
+                  // setFormData({
+                    // ...formData,
+                //     sortOrder: parseInt(e.target.value) || 0,
+                //   })
+                // }
                 placeholder="0"
                 min={0}
               />
 
               <Select
                 label="Category Status"
-                name="staus"
-                value={formData.status}
-                onChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    status: value,
-                  })
-                }
+                // name="staus"
+                // value={formData.status}
+                // onChange={(value) =>
+                  // setFormData({
+                    // ...formData,
+                //     status: value,
+                //   })
+                // }
               >
-                {[
+                {/* {[
                   { value: "active", label: "Active" },
                   { value: "inactive", label: "Inactive" },
                   { value: "draft", label: "Draft" },
                   { value: "archive", label: "Archive" },
                 ].map((status) => (
-                  <Option key={status.value} value={status.value}>
+                  // <Option key={status.value} value={status.value}>
                     {status.label}
                   </Option>
-                ))}
+                ))} */}
               </Select>
             </div>
           </div>

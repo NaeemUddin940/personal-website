@@ -1,5 +1,5 @@
 "use client";
-import { DatePicker } from "@/component/ui/date-picker";
+import { DatePicker } from "@/components/common/date-picker";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
 import {

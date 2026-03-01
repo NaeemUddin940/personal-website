@@ -21,11 +21,11 @@ export default function SocialCardPreview({
       </CardHeader>
       {/* <div className="p-4 border-b border-border"></div> */}
       <CardContent>
-        {formData.seo.ogImage ? (
+        {formData?.seo?.ogImage ? (
           <Image
             height={100}
             width={100}
-            src={formData.seo.ogImage}
+            src={formData?.seo?.ogImage}
             alt="og preview"
             className="w-full h-24 object-cover"
             onError={(e) => {
@@ -46,10 +46,12 @@ export default function SocialCardPreview({
           example.com
         </p>
         <p className="text-sm font-semibold text-muted-foreground leading-tight mt-0.5 line-clamp-1">
-          {formData.seo.ogTitle || formData.name || "Category Title"}
+          {formData?.seo?.ogTitle || formData?.name || "Category Title"}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-          {formData.seo.ogDescription || formData.description || "Description"}
+          {formData?.seo?.ogDescription ||
+            formData?.description ||
+            "Description"}
         </p>
       </CardFooter>
     </Card>

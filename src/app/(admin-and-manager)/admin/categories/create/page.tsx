@@ -2,9 +2,12 @@
 import { CategoryForm } from "@/@types/category-form.";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { categoryFullSchema } from "@/validation/category-management";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { Settings2 } from "lucide-react";
 import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { HiOutlineFolder, HiOutlinePhotograph } from "react-icons/hi";
 import CategoryHeader from "./category-header";
 import AttributeManagement from "./components/attribute-management";
@@ -78,7 +81,32 @@ const AVAILABLE_ATTRIBUTES: AvailableAttribute[] = [
 ];
 
 export default function CategoryCreatePage() {
-  
+  const methods = useForm<FormValues>({
+    resolver: zodResolver(categoryFullSchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      description: "",
+      parentId: "",
+      image: "",
+      status: "draft",
+      sortOrder: 0,
+      seo: {
+        metaTitle: "",
+        metaDescription: "",
+        metaKeywords: "",
+        canonicalUrl: "",
+        robots: "index,follow",
+        ogTitle: "",
+        ogDescription: "",
+        ogImage: "",
+      },
+    },
+  });
+
+  const onSubmit = (data: FormValues) => {
+    console.log(data);
+  };
 
   const [formData, setFormData] = useState<CategoryForm>({
     name: "",
@@ -111,69 +139,76 @@ export default function CategoryCreatePage() {
     { id: "3", name: "Home & Garden" },
   ];
   return (
-    <main className="w-full">
-      <CategoryHeader />
-      <Card className="max-w-7xl mt-5 w-full mx-auto flex flex-col items-center justify-center">
-        <Tabs
-          defaultValue="basic-info"
-          orientation="horizontal"
-          variant="progress"
-          className="w-full px-3"
-        >
-          <TabsList className="flex bg-secondary py-2 rounded-xl items-center w-full">
-            <TabsTrigger icon={HiOutlineFolder} value="basic-info">
-              Basic Info
-            </TabsTrigger>
-            <TabsTrigger icon={Settings2} value="manage-attribute">
-              Manage Attribute
-            </TabsTrigger>
-            <TabsTrigger icon={HiOutlinePhotograph} value="seo-settings">
-              SEO Settings
-            </TabsTrigger>
-          </TabsList>
-
-          <section className="grid grid-cols-1 lg:grid-cols-7 gap-5 mb-5 w-full">
-            <div className="col-span-5">
-              <TabsContent value="basic-info">
-                <CategoryBasicInfo
-                  formData={formData}
-                  setFormData={setFormData}
-                  handleNameChange={handleNameChange}
-                  parentCategories={parentCategories}
-                />
-              </TabsContent>
-              <TabsContent value="manage-attribute">
-                <AttributeManagement
-                  formData={formData}
-                  setFormData={setFormData}
-                />
-              </TabsContent>
-              <TabsContent value="seo-settings">
-                <SeoSettings formData={formData} setFormData={setFormData} />
-              </TabsContent>
-              <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                className="grid grid-cols-2 gap-5"
-              >
-                <SocialCardPreview formData={formData} />
-                <QuickTips />
-              </motion.div>
-            </div>
-            <motion.div
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              className="col-span-2 mt-5 space-y-3"
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+        <main className="w-full">
+          <CategoryHeader />
+          <Card className="max-w-7xl mt-5 w-full mx-auto flex flex-col items-center justify-center">
+            <Tabs
+              defaultValue="basic-info"
+              orientation="horizontal"
+              variant="progress"
+              className="w-full px-3"
             >
-              <CategoryCardPreview formData={formData} />
+              <TabsList className="flex bg-secondary py-2 rounded-xl items-center w-full">
+                <TabsTrigger icon={HiOutlineFolder} value="basic-info">
+                  Basic Info
+                </TabsTrigger>
+                <TabsTrigger icon={Settings2} value="manage-attribute">
+                  Manage Attribute
+                </TabsTrigger>
+                <TabsTrigger icon={HiOutlinePhotograph} value="seo-settings">
+                  SEO Settings
+                </TabsTrigger>
+              </TabsList>
 
-              <GoogleSerpPreview formData={formData} />
+              <section className="grid grid-cols-1 lg:grid-cols-7 gap-5 mb-5 w-full">
+                <div className="col-span-5">
+                  <TabsContent value="basic-info">
+                    <CategoryBasicInfo
+                      formData={formData}
+                      setFormData={setFormData}
+                      handleNameChange={handleNameChange}
+                      parentCategories={parentCategories}
+                    />
+                  </TabsContent>
+                  <TabsContent value="manage-attribute">
+                    <AttributeManagement
+                      formData={formData}
+                      setFormData={setFormData}
+                    />
+                  </TabsContent>
+                  <TabsContent value="seo-settings">
+                    <SeoSettings
+                      formData={formData}
+                      setFormData={setFormData}
+                    />
+                  </TabsContent>
+                  <motion.div
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="grid grid-cols-2 gap-5"
+                  >
+                    <SocialCardPreview formData={formData} />
+                    <QuickTips />
+                  </motion.div>
+                </div>
+                <motion.div
+                  initial={{ x: 100, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  className="col-span-2 mt-5 space-y-3"
+                >
+                  <CategoryCardPreview formData={formData} />
 
-              <AttributesPreview attributes={AVAILABLE_ATTRIBUTES} />
-            </motion.div>
-          </section>
-        </Tabs>
-      </Card>
-    </main>
+                  <GoogleSerpPreview formData={formData} />
+
+                  <AttributesPreview attributes={AVAILABLE_ATTRIBUTES} />
+                </motion.div>
+              </section>
+            </Tabs>
+          </Card>
+        </main>
+      </form>
+    </FormProvider>
   );
 }
