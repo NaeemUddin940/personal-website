@@ -1,5 +1,3 @@
-
-
 export default function HomePage() {
   return (
     <div className="p-4 md:p-10 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300">

@@ -5,12 +5,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { CategoryFullInput } from "@/validation/category-management";
 import Image from "next/image";
 
 export default function SocialCardPreview({
-  formData,
+  preview,
 }: {
-  formData: CategoryForm;
+  preview: CategoryFullInput;
 }) {
   return (
     <Card className=" rounded-2xl shadow-sm border border-border overflow-hidden">
@@ -19,13 +20,13 @@ export default function SocialCardPreview({
           Social Media Card
         </CardTitle>
       </CardHeader>
-      {/* <div className="p-4 border-b border-border"></div> */}
+
       <CardContent>
-        {formData?.seo?.ogImage ? (
+        {preview?.seoSettings?.ogImage ? (
           <Image
             height={100}
             width={100}
-            src={formData?.seo?.ogImage}
+            src={preview?.seoSettings?.ogImage}
             alt="og preview"
             className="w-full h-24 object-cover"
             onError={(e) => {
@@ -46,12 +47,10 @@ export default function SocialCardPreview({
           example.com
         </p>
         <p className="text-sm font-semibold text-muted-foreground leading-tight mt-0.5 line-clamp-1">
-          {formData?.seo?.ogTitle || formData?.name || "Category Title"}
+          {preview?.seoSettings?.ogTitle || preview?.name || "Category Title"}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-          {formData?.seo?.ogDescription ||
-            formData?.description ||
-            "Description"}
+          {preview?.seoSettings?.ogDescription || preview?.description || "Description"}
         </p>
       </CardFooter>
     </Card>

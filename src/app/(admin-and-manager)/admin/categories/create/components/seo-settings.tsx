@@ -1,11 +1,21 @@
 "use client";
 import Input from "@/components/common/input";
+import InputField from "@/components/common/input-field";
 import { SectionHeader } from "@/components/common/section-header";
 import { Card } from "@/components/ui/card";
 import { Option, Select } from "@/components/ui/select";
+import { CategoryFullInput } from "@/validation/category-management";
 import { motion } from "framer-motion";
+import { Controller, useFormContext } from "react-hook-form";
 import { HiOutlineDocumentText } from "react-icons/hi";
-export default function SeoSettings({ formData, setFormData }) {
+
+export default function SeoSettings() {
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = useFormContext<CategoryFullInput>();
+
   return (
     <motion.div
       key="step2"
@@ -20,130 +30,79 @@ export default function SeoSettings({ formData, setFormData }) {
           subtitle="Control how this category appears in search results"
           icon={HiOutlineDocumentText}
         />
-        <div className="space-y-5 grid grid-cols-2 gap-5">
-          <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-5">
+          <div>
             <h4 className="text-sm font-semibold text-card-foreground mb-4">
               SEO Basic and Important Details
             </h4>
-            <Input
+            <InputField
               label="Meta Title"
-              name="metaTitle"
-              required
-              value={formData.seo.metaTitle}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  seo: { ...formData.seo, metaTitle: e.target.value },
-                })
-              }
+              {...register("seoSettings.metaTitle")}
+              error={errors?.seoSettings?.metaTitle}
               placeholder="SEO-optimized title"
             />
 
-            <Input
+            <InputField
               label="Meta Description"
-              name="canonicalUrl"
-              required
-              value={formData.seo.canonicalUrl}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  seo: { ...formData.seo, canonicalUrl: e.target.value },
-                })
-              }
+              {...register("seoSettings.metaDescription")}
+              error={errors?.seoSettings?.metaDescription}
               placeholder="Concise description for search engines (max 160 chars)"
             />
 
-            <Input
+            <InputField
               label="Meta Keywords"
-              name="metaDescription"
-              required
-              value={formData.seo.metaKeywords}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  seo: { ...formData.seo, metaKeywords: e.target.value },
-                })
-              }
+              {...register("seoSettings.metaKeywords")}
+              error={errors?.seoSettings?.metaKeywords}
               placeholder="keyword1, keyword2, keyword3"
+            />
+
+            <InputField
+              label="Canonical URL"
+              {...register("seoSettings.canonicalUrl")}
+              error={errors?.seoSettings?.canonicalUrl}
+              placeholder="https://example.com/canonical-url"
             />
           </div>
 
-          <div className="space-y-4">
+          <div>
             <h4 className="text-sm font-semibold text-card-foreground mb-4">
               Open Graph (Social Sharing)
             </h4>
-            <Input
+            <InputField
               label="OG Title"
-              name="ogTitle"
-              required
-              value={formData.seo.ogTitle}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  seo: { ...formData.seo, ogTitle: e.target.value },
-                })
-              }
+              {...register("seoSettings.ogTitle")}
+              error={errors?.seoSettings?.ogTitle}
               placeholder="Title for social media shares"
             />
-            <Input
+            <InputField
               label="OG Description"
-              name="ogDescription"
-              required
-              value={formData.seo.ogDescription}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  seo: { ...formData.seo, ogDescription: e.target.value },
-                })
-              }
+              {...register("seoSettings.ogDescription")}
+              error={errors?.seoSettings?.ogDescription}
               placeholder="Description for social media shares"
             />
-            <Input
+            <InputField
               label="OG Image URL"
-              name="ogImage"
-              required
-              value={formData.seo.ogImage}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  seo: { ...formData.seo, ogImage: e.target.value },
-                })
-              }
+              {...register("seoSettings.ogImage")}
+              error={errors?.seoSettings?.ogImage}
               placeholder="https://example.com/og-image.jpg"
             />
+            <Controller
+              name="seoSettings.robots"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Select
+                  label="Robots Directive"
+                  value={value}
+                  onChange={(selectedValue) => onChange(selectedValue)}
+                >
+                  <Option value="index,follow">index, follow</Option>
+                  <Option value="noindex,follow">noindex, follow</Option>
+                  <Option value="index,nofollow">index, nofollow</Option>
+                  <Option value="noindex,nofollow">noindex, nofollow</Option>
+                </Select>
+              )}
+            />
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-5">
-          <Input
-            label="Canonical URL"
-            name="metaDescription"
-            required
-            value={formData.seo.metaKeywords}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                seo: { ...formData.seo, metaKeywords: e.target.value },
-              })
-            }
-            placeholder="https://example.com/canonical-url"
-          />
-
-          <Select
-            label="Robots Directive"
-            name="robots"
-            value={formData.seo.robots}
-            onChange={(value) =>
-              setFormData({
-                ...formData,
-                seo: { ...formData.seo, robots: value },
-              })
-            }
-          >
-            <Option value="index,follow">index, follow</Option>
-            <Option value="noindex,follow">noindex, follow</Option>
-            <Option value="index,nofollow">index, nofollow</Option>
-            <Option value="noindex,nofollow">noindex, nofollow</Option>
-          </Select>
         </div>
       </Card>
     </motion.div>

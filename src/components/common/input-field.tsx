@@ -112,7 +112,7 @@ export type InputFieldProps = InputFieldInputProps | InputFieldTextareaProps;
 // Size classes mapping
 const sizeClasses: Record<InputSize, string> = {
   sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2.5 text-base",
+  md: "px-4 py-2.5 text-md",
   lg: "px-5 py-3.5 text-lg",
 };
 
@@ -342,6 +342,7 @@ export const InputField = forwardRef<
   };
 
   // Combined props for register and controlled input
+  // Combined props for register and controlled input
   const getInputProps = () => {
     const baseProps = {
       id: inputId,
@@ -358,16 +359,27 @@ export const InputField = forwardRef<
           : undefined,
     };
 
-    // React Hook Form
+    // React Hook Form - এই অংশটি ঠিক করুন
     if (register) {
       return {
         ...baseProps,
-        ...register,
-        onChange: handleChange,
+        ...register, // register এর সমস্ত প্রপস (onChange, onBlur, ref, name) রাখুন
+        onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+          // প্রথমে register এর onChange কল করুন (এটাই আসলে react-hook-form এ ভ্যালু আপডেট করে)
+          register.onChange?.(e);
+
+          // character count আপডেট করুন
+          if (showCharCount) {
+            setCharCount(e.target.value.length);
+          }
+
+          // আপনার কাস্টম onChange কল করুন (যদি থাকে)
+          onChange?.(e);
+        },
       };
     }
 
-    // Controlled component (ONLY if value is defined)
+    // Controlled component
     if (value !== undefined) {
       return {
         ...baseProps,
@@ -376,7 +388,7 @@ export const InputField = forwardRef<
       };
     }
 
-    // Uncontrolled (Native Form case)
+    // Uncontrolled
     return {
       ...baseProps,
       onChange: handleChange,

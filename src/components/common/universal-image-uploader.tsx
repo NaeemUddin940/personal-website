@@ -27,6 +27,7 @@ interface ImageUploaderProps {
   variant?: VariantType;
   label?: string;
   maxFile?: number;
+  errors?: any;
   maxFileSize?: number; // MB
   acceptedTypes?: string[];
   className?: string; // Wrapper container (width control)
@@ -39,6 +40,7 @@ export const UniversalImageUploader: React.FC<ImageUploaderProps> = ({
   label = "",
   maxFile = 5,
   maxFileSize = 2,
+  errors,
   acceptedTypes = ["image/jpeg", "image/png", "image/webp"],
   className = "",
   boxClassName = "",
@@ -334,6 +336,7 @@ export const UniversalImageUploader: React.FC<ImageUploaderProps> = ({
               </motion.div>
             );
           })}
+          {errors && <span className="text-red-500">{errors?.message}</span>}
         </AnimatePresence>
       </div>
 

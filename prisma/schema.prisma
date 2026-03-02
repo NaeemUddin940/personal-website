@@ -410,7 +410,7 @@ model Category {
   sortOrder Int     @default(0)
 
   // Attributes attached to this category (with possible overrides)
-  attributes CategoryAttribute[]
+  attributes CategoryAttribute[]?
 
   // Attributes that were *created* here before being promoted to global
   createdAttributes Attribute[] @relation("OriginCategoryAttributes")

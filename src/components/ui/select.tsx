@@ -350,7 +350,7 @@ export function Select({
                 role="alert"
                 className="text-[12px] font-medium text-destructive flex items-center gap-1"
               >
-                ❌ {error}
+                {error.message}
               </span>
             ) : helpText ? (
               <span className="text-[12px] text-muted-foreground">

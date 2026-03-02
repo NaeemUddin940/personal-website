@@ -10,10 +10,15 @@ export const RequiredToggle = ({
   isRequired: boolean;
   onToggle: () => void;
 }) => {
+  console.log("isRequired", isRequired);
+  const handleClick = () => {
+    console.log("Button clicked, calling onToggle");
+    onToggle();
+  };
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={handleClick}
       className={cn(
         "relative flex active:scale-95 hover:scale-105 cursor-pointer items-center gap-2.5 px-3 py-2 rounded-lg border transition-all duration-300 select-none",
         isRequired

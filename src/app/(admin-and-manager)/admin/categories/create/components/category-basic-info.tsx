@@ -1,24 +1,21 @@
 "use client";
-import Input from "@/components/common/input";
 import InputField from "@/components/common/input-field";
 import { SectionHeader } from "@/components/common/section-header";
 import { UniversalImageUploader } from "@/components/common/universal-image-uploader";
 import { Card } from "@/components/ui/card";
 import { Option, Select } from "@/components/ui/select";
+import { CategoryFullInput } from "@/validation/category-management";
 import { motion } from "framer-motion";
-import { useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { HiOutlineFolder } from "react-icons/hi";
 
-export default function CategoryBasicInfo({
-  formData,
-  // setFormData,
-  // handleNameChange,
-  parentCategories,
-}) {
+export default function CategoryBasicInfo() {
   const {
     register,
+    control,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<CategoryFullInput>();
+
   return (
     <div>
       <motion.div
@@ -40,108 +37,102 @@ export default function CategoryBasicInfo({
               <InputField
                 label="Category Name"
                 required
-                name="name"
-                {...register("name")}
-                error={errors?.name}
-                // value={formData.name}
-                // onChange={handleNameChange}
-
+                {...register("basicInfo.name")} // Changed: added basicInfo.
+                error={errors?.basicInfo?.name} // Changed: updated error path
                 placeholder="e.g. Summer Collection"
               />
               <InputField
                 label="URL Slug"
                 required
-                // name="slug"
-                {...register("slug")}
-                error={errors?.slug}
-                // value={formData.slug}
-                // onChange={(e) =>
-                  // setFormData({ ...formData, slug: e.target.value })
-                // }
+                disabled
+                {...register("basicInfo.slug")} // Changed: added basicInfo.
+                error={errors?.basicInfo?.slug} // Changed: updated error path
                 placeholder="summer-collection"
               />
             </div>
+
             <div className="flex items-center justify-between gap-5">
               <InputField
                 type="textarea"
                 label="Description"
-                // name="description"
                 rows={9}
-                register={register("description")}
-                error={errors?.description}
-                // value={formData.description}
-                // onChange={(e) =>
-                  // setFormData({
-                    // ...formData,
-                  //   description: e.target.value,
-                  // })
-                // }
+                {...register("basicInfo.description")} // Changed: added basicInfo.
+                error={errors?.basicInfo?.description} // Changed: updated error path
                 placeholder="Briefly describe what this category contains..."
               />
-              <UniversalImageUploader
-                label="Category Image"
-                maxFile={1}
-                variant="medium"
+
+              <Controller
+                name="basicInfo.image" // Changed: added basicInfo. and using Controller
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <UniversalImageUploader
+                    label="Category Image"
+                    maxFile={1}
+                    variant="medium"
+                    value={value}
+                    errors={errors?.basicInfo?.image}
+                    onImageUpload={(imageUrl) => onChange(imageUrl)} // Assuming this prop exists
+                  />
+                )}
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Select
-                label="Parent Category"
-                // name="parentId"
-                // value={formData.parentId}
-                // onChange={(value) =>
-                  // setFormData({
-                    // ...formData,
-                //     parentId: value,
-                //   })
-                // }
-              >
-                {/* <Option value="">None (Top Level)</Option> */}
-                {/* {parentCategories.map((cat) => (
-                  // <Option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </Option>
-                ))} */}
-              </Select>
+              {/* Parent Category Select */}
+              <div className="flex flex-col gap-1.5">
+                <Controller
+                  name="basicInfo.parentId" // Changed: added basicInfo.
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      label="Parent Category"
+                      errors={errors?.basicInfo?.parentId}
+                      onChange={(selectedValue) => onChange(selectedValue)}
+                      value={value}
+                    >
+                      {[
+                        { id: "1", name: "Electronics" },
+                        { id: "2", name: "Fashion" },
+                        { id: "3", name: "Home & Garden" },
+                      ].map((cat: any) => (
+                        <Option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </Option>
+                      ))}
+                    </Select>
+                  )}
+                />
+              </div>
 
               <InputField
-                type="number"
                 label="Sort Order"
-                // name="sortOrder"
-                // value={formData.sortOrder}
-                // onChange={(e) =>
-                  // setFormData({
-                    // ...formData,
-                //     sortOrder: parseInt(e.target.value) || 0,
-                //   })
-                // }
+                type="number"
+                {...register("basicInfo.sortOrder", { valueAsNumber: true })} // Changed: added basicInfo.
+                error={errors?.basicInfo?.sortOrder}
                 placeholder="0"
                 min={0}
               />
 
-              <Select
-                label="Category Status"
-                // name="staus"
-                // value={formData.status}
-                // onChange={(value) =>
-                  // setFormData({
-                    // ...formData,
-                //     status: value,
-                //   })
-                // }
-              >
-                {/* {[
-                  { value: "active", label: "Active" },
-                  { value: "inactive", label: "Inactive" },
-                  { value: "draft", label: "Draft" },
-                  { value: "archive", label: "Archive" },
-                ].map((status) => (
-                  // <Option key={status.value} value={status.value}>
-                    {status.label}
-                  </Option>
-                ))} */}
-              </Select>
+              {/* Status Select */}
+              <div className="flex flex-col gap-1.5">
+                <Controller
+                  name="basicInfo.status" // Changed: added basicInfo.
+                  control={control}
+                  defaultValue="draft"
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      label="Status"
+                      onChange={(selectedValue) => onChange(selectedValue)}
+                      value={value}
+                    >
+                      <Option value="active">Active</Option>
+                      <Option value="inactive">Inactive</Option>
+                      <Option value="draft">Draft</Option>
+                      <Option value="archive">Archive</Option>
+                    </Select>
+                  )}
+                />
+              </div>
             </div>
           </div>
         </Card>

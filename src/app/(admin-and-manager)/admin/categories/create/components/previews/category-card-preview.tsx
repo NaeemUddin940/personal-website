@@ -1,17 +1,18 @@
-import { CategoryForm } from "@/@types/category-form.";
+import { parentCategories } from "@/@api-response/parent-categories";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { CategoryFullInput } from "@/validation/category-management";
 import Image from "next/image";
 import { HiOutlinePhotograph } from "react-icons/hi";
 
 export default function CategoryCardPreview({
-  formData,
+  preview,
 }: {
-  formData: CategoryForm;
+  preview: CategoryFullInput;
 }) {
   return (
     <Card className="rounded-2xl shadow-sm border border-border ">
@@ -25,13 +26,13 @@ export default function CategoryCardPreview({
       </CardHeader>
 
       <CardContent>
-        {formData.image ? (
+        {preview?.basicInfo?.image ? (
           <div className="mb-4 rounded-xl overflow-hidden">
             <Image
               height={100}
               width={100}
-              src={formData.image}
-              alt={formData.name}
+              src={preview?.basicInfo?.image}
+              alt={preview?.basicInfo?.name}
               className="w-full h-28 object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
@@ -47,23 +48,30 @@ export default function CategoryCardPreview({
       </CardContent>
       <CardFooter>
         <h4 className="text-lg font-bold text-accent-foreground mb-1">
-          {formData.name || (
+          {preview?.basicInfo?.name || (
             <span className="text-accent-foreground">Category Name</span>
           )}
         </h4>
-        {formData.parentId && (
+        {preview?.basicInfo?.parentId && (
           <div className="flex items-center gap-1 mb-2">
             <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
-              ↳ {parentCategories.find((c) => c.id === formData.parentId)?.name}
+              ↳{" "}
+              {
+                parentCategories.find(
+                  (c) => c.id === preview?.basicInfo?.parentId,
+                )?.name
+              }
             </span>
           </div>
         )}
         <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-          {formData.description || "No description provided."}
+          {preview?.basicInfo?.description || "No description provided."}
         </p>
         <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border pt-3">
-          <span className="font-mono">/{formData.slug || "category-slug"}</span>
-          <span>Order: {formData.sortOrder}</span>
+          <span className="font-mono">
+            /{preview?.basicInfo?.slug || "category-slug"}
+          </span>
+          <span>Order: {preview?.basicInfo?.sortOrder}</span>
         </div>
       </CardFooter>
     </Card>

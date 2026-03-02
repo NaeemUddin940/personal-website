@@ -1,23 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useFormContext } from "react-hook-form";
 import { HiOutlineArrowLeft, HiOutlineSave } from "react-icons/hi";
-export default function CategoryHeader({
-  showPreview,
-  setShowPreview,
-  isSubmitting,
-}: {
-  showPreview: boolean;
-  setShowPreview: (show: boolean) => void;
-  isSubmitting: any;
-}) {
-  const {
-    handleSubmit
-  } = useFormContext()
-  function onSubmit(data){
-    console.log(data)
-  }
+export default function CategoryHeader() {
   return (
     <>
       <motion.div
@@ -63,9 +48,9 @@ export default function CategoryHeader({
                 // isLoading={isSubmitting}
                 variant="primary"
                 type="submit"
-                onClick={handleSubmit(onSubmit)}
+                form="category-form"
               >
-                sdj
+                Save
                 {/* <span>{isSubmitting ? "Saving..." : "Save"}</span> */}
               </Button>
             </div>

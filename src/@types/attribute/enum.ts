@@ -1,0 +1,84 @@
+// types/attribute-enums.ts
+
+export enum AttributeType {
+  TEXT = 'TEXT',
+  TEXTAREA = 'TEXTAREA',
+  NUMBER = 'NUMBER',
+  BOOLEAN = 'BOOLEAN',
+  SELECT = 'SELECT',
+  MULTISELECT = 'MULTISELECT',
+  RADIO = 'RADIO',
+  CHECKBOX = 'CHECKBOX',
+  COLOR = 'COLOR',
+  SIZE = 'SIZE',
+  IMAGE = 'IMAGE',
+  FILE = 'FILE',
+  DATE = 'DATE',
+  DATETIME = 'DATETIME',
+  RANGE = 'RANGE',
+  PRICE = 'PRICE',
+  PERCENTAGE = 'PERCENTAGE',
+  WEIGHT = 'WEIGHT',
+  DIMENSION = 'DIMENSION',
+  URL = 'URL',
+  EMAIL = 'EMAIL',
+  PHONE = 'PHONE',
+  RATING = 'RATING',
+  JSON = 'JSON'
+}
+
+export enum SwatchType {
+  COLOR = 'COLOR',
+  IMAGE = 'IMAGE',
+  TEXT = 'TEXT',
+  ICON = 'ICON',
+  GRADIENT = 'GRADIENT',
+  PATTERN = 'PATTERN'
+}
+
+export enum AttributeGroup {
+  BASIC = 'BASIC',
+  TECHNICAL = 'TECHNICAL',
+  PHYSICAL = 'PHYSICAL',
+  PACKAGING = 'PACKAGING',
+  WARRANTY = 'WARRANTY',
+  SHIPPING = 'SHIPPING',
+  SEO = 'SEO',
+  MARKETING = 'MARKETING',
+  INVENTORY = 'INVENTORY',
+  PRICING = 'PRICING',
+  CUSTOM = 'CUSTOM'
+}
+
+export enum AttributeValidation {
+  REQUIRED = 'REQUIRED',
+  UNIQUE = 'UNIQUE',
+  MIN_LENGTH = 'MIN_LENGTH',
+  MAX_LENGTH = 'MAX_LENGTH',
+  MIN_VALUE = 'MIN_VALUE',
+  MAX_VALUE = 'MAX_VALUE',
+  PATTERN = 'PATTERN',
+  EMAIL = 'EMAIL',
+  URL = 'URL',
+  PHONE = 'PHONE',
+  IMAGE_DIMENSION = 'IMAGE_DIMENSION',
+  FILE_SIZE = 'FILE_SIZE',
+  FILE_TYPE = 'FILE_TYPE',
+  CUSTOM = 'CUSTOM'
+}
+
+export enum AttributeVisibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  HIDDEN = 'HIDDEN',
+  SELLER_ONLY = 'SELLER_ONLY',
+  BUYER_ONLY = 'BUYER_ONLY'
+}
+
+export enum AttributeStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  DRAFT = 'DRAFT',
+  ARCHIVED = 'ARCHIVED'
+}
+

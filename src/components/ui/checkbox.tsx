@@ -7,7 +7,7 @@ export const Checkbox = ({
   onChange,
   name,
   label,
-  activeColor = "#506eec",
+  activeColor = "#624dfe",
   value = "on",
   id,
 }) => {
@@ -106,7 +106,9 @@ export const Checkbox = ({
         </motion.div>
 
         {/* Label Text */}
-        <span className="ml-3 text-slate-700 font-medium transition-colors group-hover:text-slate-900">
+        <span
+          className={`ml-3 ${activeColor ? `text-[${activeColor}]` : "text-primary"} font-medium transition-colors`}
+        >
           {label}
         </span>
       </label>

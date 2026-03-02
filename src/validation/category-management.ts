@@ -35,9 +35,9 @@ export const categoryBasicInfoSchema = z.object({
 
   status: categoryStatusEnum.default("draft"),
 
-  parentId: z.string().cuid().optional().nullable(),
+  parentId: z.string().optional().nullable(),
 
-  image: z.string().url("Image must be a valid URL").optional().nullable(),
+  image: z.string().optional().nullable(),
 
   sortOrder: z.number().int().min(0).default(0),
 });
@@ -46,30 +46,28 @@ export const categoryBasicInfoSchema = z.object({
    STEP 2: ATTRIBUTE MANAGEMENT
 ========================================================= */
 
+// Attribute Item Schema (প্রতিটি অ্যাট্রিবিউটের জন্য)
 export const categoryAttributeItemSchema = z.object({
-  attributeId: z.string().cuid("Invalid attribute ID"),
-
+  id: z.string().optional(), // লোকাল আইডি
+  attributeId: z.string().optional(), // গ্লোবাল অ্যাট্রিবিউট আইডি (যদি থাকে)
+  name: z.string().min(1, "Attribute name is required"),
+  type: z.enum(["text", "number", "select", "boolean", "date"]),
   isRequired: z.boolean().default(false),
-
   sortOrder: z.number().int().min(0).default(0),
+  options: z.array(z.string()).optional(),
+  overrideLabel: z.string().optional(),
+  overrideHelpText: z.string().optional(),
+  isFilterable: z.boolean().default(true),
+  isVisible: z.boolean().default(true),
+  defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional(),
 });
 
+// অ্যাট্রিবিউট ম্যানেজমেন্ট স্কিমা (পুরো section টি optional)
 export const categoryAttributeSchema = z
   .object({
-    attributes: z
-      .array(categoryAttributeItemSchema)
-      .min(1, "At least one attribute is required"),
+    attributes: z.array(categoryAttributeItemSchema).default([]), // Empty array by default
   })
-  .refine(
-    (data) => {
-      const ids = data.attributes.map((a) => a.attributeId);
-      return new Set(ids).size === ids.length;
-    },
-    {
-      message: "Duplicate attributes are not allowed",
-      path: ["attributes"],
-    },
-  );
+  .optional();
 
 /* =========================================================
    STEP 3: SEO SETTINGS
@@ -115,7 +113,7 @@ export const categorySeoSchema = z.object({
 
 export const categoryFullSchema = z.object({
   basicInfo: categoryBasicInfoSchema,
-  attributeManagement: categoryAttributeSchema,
+  attributeManagement: categoryAttributeSchema, // ✅ আনকমেন্ট করা হয়েছে
   seoSettings: categorySeoSchema.optional(),
 });
 

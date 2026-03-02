@@ -3,6 +3,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import { Providers } from "./provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,10 +31,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         cz-shortcut-listen="true"
       >
-        <ThemeProvider defaultTheme="dark">
-          <main className="flex-1">{children}</main>
-        </ThemeProvider>
-        <Toaster position="top-center" />
+        <Providers>
+          <ThemeProvider defaultTheme="dark">
+            <main className="flex-1">{children}</main>
+          </ThemeProvider>
+          <Toaster position="top-center" />
+        </Providers>
       </body>
     </html>
   );
