@@ -1,6 +1,7 @@
 // attribute-management.tsx
 "use client";
 import { DUMMY_ALL_ATTRIBUTES } from "@/@api-response/dummy-all-attributes";
+import { getAllAttributes } from "@/actions/attribute-management/get-all-attributes";
 import { SectionHeader } from "@/components/common/section-header";
 import { Card } from "@/components/ui/card";
 import {
@@ -8,7 +9,7 @@ import {
   CategoryFullInput,
 } from "@/validation/category-management";
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import {
   HiOutlineCog,
@@ -19,23 +20,14 @@ import {
 import { AttributeRow } from "./attribute-row";
 import { AvailableAttributeList } from "./available-attribute";
 
-
 export default function AttributeManagement() {
-  const {
-    control,
-    watch,
-    formState: { errors },
-  } = useFormContext<CategoryFullInput>();
+  const { control } = useFormContext<CategoryFullInput>();
 
   // useFieldArray ব্যবহার করে attributes ম্যানেজ করা
   const { fields, append, remove, update } = useFieldArray({
     control,
-    name: "attributeManagement.attributes", // এই পাথে ডেটা সংরক্ষণ হবে
+    name: "attributeManagement", // এই পাথে ডেটা সংরক্ষণ হবে
   });
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   const assignAttribute = useCallback(
     (availableAttr: AvailableAttr) => {
@@ -46,10 +38,7 @@ export default function AttributeManagement() {
         type: availableAttr.type,
         isRequired: false,
         sortOrder: fields.length,
-        options:
-          availableAttr.type === "select"
-            ? ["Option 1", "Option 2"]
-            : undefined,
+        options: availableAttr.options,
         isFilterable: true,
         isVisible: true,
       });
@@ -68,13 +57,13 @@ export default function AttributeManagement() {
   );
 
   const deleteAttribute = useCallback(
-    (id: string) => {
-      const index = fields.findIndex((field) => field.id === id);
-      if (index !== -1 && fields.length > 1) {
+    (index: number) => {
+      // id er bodole index nin
+      if (fields.length > 0) {
         remove(index);
       }
     },
-    [fields, remove],
+    [remove, fields.length],
   );
 
   const assignedIds = fields.map((attr) => attr.attributeId).filter(Boolean);
@@ -99,7 +88,7 @@ export default function AttributeManagement() {
     >
       {/* Stats Bar */}
       {hasAttributes && (
-        <Card className="p-5">
+        <Card className="p-6 bg-secondary/50">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-semibold text-card-foreground">
@@ -159,7 +148,7 @@ export default function AttributeManagement() {
           />
 
           <div className="space-y-4">
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="popLayout" initial={false}>
               {fields.map((field, i) => (
                 <AttributeRow
                   key={field.id}
@@ -176,17 +165,7 @@ export default function AttributeManagement() {
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={() => {
-                append({
-                  id: `attr-${Date.now()}`,
-                  name: "",
-                  type: "text",
-                  isRequired: false,
-                  sortOrder: fields.length,
-                  isFilterable: true,
-                  isVisible: true,
-                });
-              }}
+              type="button"
               className="w-full py-4 border-2 border-dashed border-border rounded-xl text-sm font-semibold text-primary hover:border-primary cursor-pointer hover:text-primary hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 group"
             >
               <div className="p-1 rounded-md bg-muted shadow-lg group-hover:bg-primary transition-colors">
@@ -208,7 +187,7 @@ export default function AttributeManagement() {
         <HiOutlineInformationCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
         <div className="text-xs text-amber-700 leading-relaxed">
           <strong className="text-amber-900">Tip:</strong> Attributes are
-          optional. You can skip this section if your category doesn't need
+          optional. You can skip this section if your category doesn&apos;t need
           specific attributes.
           {!hasAttributes && (
             <span className="block mt-1 text-amber-600 font-medium">

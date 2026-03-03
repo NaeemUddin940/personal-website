@@ -41,7 +41,7 @@ export const menuData: MenuItem[] = [
       {
         id: "2-3-1",
         title: "Create",
-        link: "/admin/categories/create",
+        link: "/admin/categories/create-category",
       },
       {
         id: "2-3-2",

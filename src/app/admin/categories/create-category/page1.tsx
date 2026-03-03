@@ -15,14 +15,14 @@ import { FormProvider, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlineFolder, HiOutlinePhotograph } from "react-icons/hi";
 import CategoryHeader from "./category-header";
-import AttributeManagement from "./components/attribute-management";
-import CategoryBasicInfo from "./components/category-basic-info";
-import AttributesPreview from "./components/previews/attributes-preview";
-import CategoryCardPreview from "./components/previews/category-card-preview";
-import GoogleSerpPreview from "./components/previews/google-serp-preview";
-import QuickTips from "./components/previews/quick-tips";
-import SocialCardPreview from "./components/previews/social-card-preview";
-import SeoSettings from "./components/seo-settings";
+import AttributeManagement from "../components/attribute-management";
+import CategoryBasicInfo from "../components/category-basic-info";
+import AttributesPreview from "../components/previews/attributes-preview";
+import CategoryCardPreview from "../components/previews/category-card-preview";
+import GoogleSerpPreview from "../components/previews/google-serp-preview";
+import QuickTips from "../components/previews/quick-tips";
+import SocialCardPreview from "../components/previews/social-card-preview";
+import SeoSettings from "../components/seo-settings";
 
 const AVAILABLE_ATTRIBUTES = [
   {
@@ -102,16 +102,18 @@ export default function CategoryCreatePage() {
         status: "draft",
         sortOrder: 0,
       },
-      attributeManagement: {
-        name: "",
-        type: "TEXT",
-        options: "",
-        overrideLabel: "",
-        overrideHelpText: "",
-        isFilterable: true,
-        isVisible: true,
-        defaultValue: "",
-      },
+      attributeManagement: [
+        {
+          name: "",
+          type: "TEXT",
+          options: "",
+          overrideLabel: "",
+          overrideHelpText: "",
+          isFilterable: true,
+          isVisible: true,
+          defaultValue: "",
+        },
+      ],
       seoSettings: {
         metaTitle: "",
         metaDescription: "",
@@ -282,8 +284,8 @@ export default function CategoryCreatePage() {
 
                       <Button
                         type="submit"
-                        className="bg-primary text-white"
-                        disabled={!isValid}
+                        variant="primary"
+                        // disabled={!isValid}
                       >
                         Submit Category
                       </Button>

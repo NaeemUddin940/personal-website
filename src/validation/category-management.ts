@@ -48,13 +48,13 @@ export const categoryBasicInfoSchema = z.object({
 
 // Attribute Item Schema (প্রতিটি অ্যাট্রিবিউটের জন্য)
 export const categoryAttributeItemSchema = z.object({
-  id: z.string().optional(), // লোকাল আইডি
-  attributeId: z.string().optional(), // গ্লোবাল অ্যাট্রিবিউট আইডি (যদি থাকে)
+  id: z.string().optional(),
+  attributeId: z.string().optional(),
   name: z.string().min(1, "Attribute name is required"),
-  type: z.enum(["text", "number", "select", "boolean", "date"]),
+  type: z.enum(["TEXT", "NUMBER", "SELECT", "BOOLEAN", "DATE"]),
   isRequired: z.boolean().default(false),
   sortOrder: z.number().int().min(0).default(0),
-  options: z.array(z.string()).optional(),
+  options: z.array(z.string()).default([]),
   overrideLabel: z.string().optional(),
   overrideHelpText: z.string().optional(),
   isFilterable: z.boolean().default(true),
@@ -62,12 +62,10 @@ export const categoryAttributeItemSchema = z.object({
   defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional(),
 });
 
-// অ্যাট্রিবিউট ম্যানেজমেন্ট স্কিমা (পুরো section টি optional)
-export const categoryAttributeSchema = z
-  .object({
-    attributes: z.array(categoryAttributeItemSchema).default([]), // Empty array by default
-  })
-  .optional();
+// ✅ এটা ঠিক করুন - সরাসরি array
+export const attributeManagementSchema = z
+  .array(categoryAttributeItemSchema)
+  .default([]);
 
 /* =========================================================
    STEP 3: SEO SETTINGS
@@ -76,16 +74,13 @@ export const categoryAttributeSchema = z
 export const categorySeoSchema = z.object({
   metaTitle: z
     .string()
-    .max(60, "Meta title should be under 60 characters")
-    .optional()
-    .nullable(),
+    .min(30, "Meta title should be at least 30 characters")
+    .max(60, "Meta title should be under 60 characters"), // Google shows 50-60 chars [citation:1]
 
   metaDescription: z
     .string()
-    .max(160, "Meta description should be under 160 characters")
-    .optional()
-    .nullable(),
-
+    .min(120, "Meta description should be at least 120 characters")
+    .max(160, "Meta description should be under 160 characters"),
   metaKeywords: z.string().optional().nullable(),
 
   canonicalUrl: z
@@ -100,7 +95,13 @@ export const categorySeoSchema = z.object({
 
   ogDescription: z.string().optional().nullable(),
 
-  ogImage: z.string().url("OG image must be valid URL").optional().nullable(),
+  ogImage: z
+    .string()
+    .optional()
+    .nullable()
+    .refine((val) => !val || z.string().url().safeParse(val).success, {
+      message: "OG image must be valid URL",
+    }),
 
   structuredData: z.unknown().optional().nullable(),
 
@@ -113,24 +114,19 @@ export const categorySeoSchema = z.object({
 
 export const categoryFullSchema = z.object({
   basicInfo: categoryBasicInfoSchema,
-  attributeManagement: categoryAttributeSchema, // ✅ আনকমেন্ট করা হয়েছে
+  attributeManagement: attributeManagementSchema, // ✅ এখন এটা array
   seoSettings: categorySeoSchema.optional(),
 });
 
 /* =========================================================
-   TYPE EXPORTS (VERY IMPORTANT)
+   TYPE EXPORTS
 ========================================================= */
 
 export type CategoryStatus = z.infer<typeof categoryStatusEnum>;
-
 export type CategoryBasicInfoInput = z.infer<typeof categoryBasicInfoSchema>;
-
 export type CategoryAttributeItemInput = z.infer<
   typeof categoryAttributeItemSchema
 >;
-
-export type CategoryAttributeInput = z.infer<typeof categoryAttributeSchema>;
-
+export type CategoryAttributeInput = z.infer<typeof attributeManagementSchema>; // array type
 export type CategorySeoInput = z.infer<typeof categorySeoSchema>;
-
 export type CategoryFullInput = z.infer<typeof categoryFullSchema>;

@@ -1,5 +1,4 @@
 "use client";
-import Input from "@/components/common/input";
 import InputField from "@/components/common/input-field";
 import { SectionHeader } from "@/components/common/section-header";
 import { Card } from "@/components/ui/card";
@@ -24,13 +23,13 @@ export default function SeoSettings() {
       exit={{ x: 80, opacity: 0 }}
       transition={{ type: "spring", stiffness: 120 }}
     >
-      <Card className="p-6">
+      <Card className="p-6 bg-secondary/50">
         <SectionHeader
           title="Search Engine Optimization"
           subtitle="Control how this category appears in search results"
           icon={HiOutlineDocumentText}
         />
-        <div className="grid grid-cols-2 gap-5">
+        <div className="flex gap-5">
           <div>
             <h4 className="text-sm font-semibold text-card-foreground mb-4">
               SEO Basic and Important Details

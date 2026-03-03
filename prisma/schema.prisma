@@ -256,7 +256,7 @@ model Attribute {
   unitPosition String? @map("unit_position") // prefix/suffix
 
   // Options for select/multiselect
-  options Json? // [{value: "red", label: "Red"}]
+  options Json? 
 
   // Validation rules
   validations Json? // Array of validation rules
@@ -362,8 +362,42 @@ enum CategoryStatus {
   draft
 }
 
-// =================== Category ↔ Attribute Relationship (with overrides) ======================
 
+// =================== Category ======================
+model Category {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  description String?
+
+  status CategoryStatus @default(draft)
+
+  parentId String?
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToCategory")
+
+  image     String?
+  sortOrder Int     @default(0)
+
+  // Attributes attached to this category (with possible overrides)
+  attributes CategoryAttribute[]
+
+  // Attributes that were *created* here before being promoted to global
+  createdAttributes Attribute[] @relation("OriginCategoryAttributes")
+
+  seo CategorySeo?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([slug])
+  @@index([parentId])
+  @@index([sortOrder])
+}
+
+// =================== Category ↔ Attribute Relationship (with overrides) ======================
 model CategoryAttribute {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -390,40 +424,6 @@ model CategoryAttribute {
   @@index([attributeId])
   @@index([sortOrder])
   @@map("category_attributes")
-}
-
-// =================== Category ======================
-model Category {
-  id   String @id @default(cuid())
-  name String
-  slug String @unique
-
-  description String?
-
-  status CategoryStatus @default(draft)
-
-  parentId String?
-  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
-  children Category[] @relation("CategoryToCategory")
-
-  image     String?
-  sortOrder Int     @default(0)
-
-  // Attributes attached to this category (with possible overrides)
-  attributes CategoryAttribute[]?
-
-  // Attributes that were *created* here before being promoted to global
-  createdAttributes Attribute[] @relation("OriginCategoryAttributes")
-
-  seo CategorySeo?
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  @@index([slug])
-  @@index([parentId])
-  @@index([sortOrder])
 }
 
 // =================== Category SEO ======================

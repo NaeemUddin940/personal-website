@@ -37,7 +37,7 @@ export const buttonVariants = {
    after:translate-x-[-50%] after:translate-y-[-50%] after:scale-0 after:opacity-100 after:transition-all \
    hover:after:w-[200%] hover:after:h-[200%] hover:after:scale-100 hover:after:opacity-0",
     outline:
-      "border-zinc-200 dark:border-zinc-800 border-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-foreground",
+      "border-border border-2 bg-accent hover:bg-secondary/20 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
     overlay:
       "flex items-center border bg-zinc-100 dark:bg-zinc-800 shadow-md hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:ring ring-indigo-500 gap-1.5 cursor-pointer whitespace-nowrap px-3 py-1 text-xs font-medium text-zinc-500 transition-all duration-300",
     glass:

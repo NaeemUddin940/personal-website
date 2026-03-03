@@ -14,6 +14,7 @@ import { StepNavigator } from "./components/step-navigator";
 import TextValidation from "./components/text-validation";
 import { tabs } from "./constant/tabs";
 
+
 // ==================== MAIN COMPONENT ====================
 export default function AttributeCreatePage() {
   const [isPending, startTransition] = useTransition();

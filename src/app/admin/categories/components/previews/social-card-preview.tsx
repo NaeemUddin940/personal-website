@@ -13,6 +13,16 @@ export default function SocialCardPreview({
 }: {
   preview: CategoryFullInput;
 }) {
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+  const shouldShowImage =
+    preview?.seoSettings?.ogImage && isValidUrl(preview?.seoSettings?.ogImage);
   return (
     <Card className=" rounded-2xl shadow-sm border border-border overflow-hidden">
       <CardHeader>
@@ -22,7 +32,7 @@ export default function SocialCardPreview({
       </CardHeader>
 
       <CardContent>
-        {preview?.seoSettings?.ogImage ? (
+        {preview?.seoSettings?.ogImage && shouldShowImage ? (
           <Image
             height={100}
             width={100}
@@ -50,7 +60,9 @@ export default function SocialCardPreview({
           {preview?.seoSettings?.ogTitle || preview?.name || "Category Title"}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-          {preview?.seoSettings?.ogDescription || preview?.description || "Description"}
+          {preview?.seoSettings?.ogDescription ||
+            preview?.description ||
+            "Description"}
         </p>
       </CardFooter>
     </Card>

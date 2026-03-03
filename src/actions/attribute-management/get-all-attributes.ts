@@ -1,5 +1,5 @@
 "use server";
-import { FILTER_OPTIONS } from "@/app/(admin-and-manager)/admin/attributes/constants/filter-options";
+import { FILTER_OPTIONS } from "@/app/admin/attributes/constants/filter-options";
 import { prisma } from "@/lib/prisma";
 
 export const getAllAttributes = async (params) => {
@@ -70,27 +70,13 @@ export const getAllAttributes = async (params) => {
       }),
     ]);
 
-    //   const attributeValues = await prisma.attributeValue.findMany({
-    //     where: {
-    //       attributeId: {
-    //         in: data.map((d) => d.id),
-    //       },
-    //     },
-    //     // Performance Tip: Only select what you actually need
-    //     select: {
-    //       id: true,
-    //       value: true,
-    //       attributeId: true,
-    //     },
-    //   });
-    //  const result = [
-    //   ...data,
-    //   values: attributeValues
-    //  ]
-
     return { data, total, pageCount: Math.ceil(total / limit) };
   } catch (error) {
     console.error("Fetch Error:", error.message);
     return { data: [], total: 0 };
   }
+};
+
+export const allAttributes = async () => {
+  return await prisma.attribute.findMany();
 };

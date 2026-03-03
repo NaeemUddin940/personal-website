@@ -1,4 +1,5 @@
-"use client"
+"use client";
+import { Button } from "@/components/common/advanced-button";
 import InputField from "@/components/common/input-field";
 import { Card } from "@/components/ui/card";
 import { Option, Select } from "@/components/ui/select";
@@ -12,6 +13,7 @@ export interface AvailableAttribute {
   id: string;
   name: string;
   type: "text" | "number" | "select" | "boolean" | "date";
+  options: string[];
   isGlobal: boolean;
   description?: string;
 }
@@ -27,7 +29,6 @@ export function AvailableAttributeList({
   onAssign,
   assignedIds,
 }: AvailableAttributeListProps) {
-  
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -40,6 +41,7 @@ export function AvailableAttributeList({
     const notAssigned = !assignedIds.includes(attr.id);
     return matchesSearch && matchesType && notAssigned;
   });
+
 
   const unassignedCount = availableAttributes.filter(
     (attr) => !assignedIds.includes(attr.id),
@@ -120,15 +122,16 @@ export function AvailableAttributeList({
                     </p>
                   </div>
                 </div>
-                <button
-                  className="px-3 py-1.5 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                <Button
+                  size="sm"
+                  variant="primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     onAssign(attr);
                   }}
                 >
                   Assign
-                </button>
+                </Button>
               </motion.div>
             ))}
 

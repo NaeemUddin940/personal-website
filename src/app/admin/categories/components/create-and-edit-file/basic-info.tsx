@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { Controller, useFormContext } from "react-hook-form";
 import { HiOutlineFolder } from "react-icons/hi";
 
-export default function CategoryBasicInfo() {
+export default function BasicInfo() {
   const {
     register,
     control,
@@ -26,7 +26,7 @@ export default function CategoryBasicInfo() {
         transition={{ type: "spring", stiffness: 120 }}
         className="space-y-6"
       >
-        <Card className="p-6">
+        <Card className="p-6 bg-secondary/50">
           <SectionHeader
             title="Basic Information"
             subtitle="Core details for your category"
