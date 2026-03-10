@@ -14,6 +14,7 @@ import {
   Trash2,
   UploadCloud,
 } from "lucide-react";
+import Image from "next/image";
 
 import {
   Controller,
@@ -205,11 +206,19 @@ const AttributeValueItem = ({
                   type="color"
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   value={currentSwatchValue || "#000000"}
-                  onChange={(e) =>
-                    setValue(`options.${index}.value`, e.target.value, {
+                  onChange={(e) => {
+                    const color = e.target.value;
+
+                    setValue(`options.${index}.value`, color, {
                       shouldDirty: true,
-                    })
-                  }
+                      shouldValidate: true,
+                    });
+
+                    setValue(`options.${index}.swatchValue`, color, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }}
                 />
 
                 {!currentSwatchValue && (
@@ -263,7 +272,9 @@ const AttributeValueItem = ({
                 className="relative w-12 h-10 border-2 border-dashed border-border rounded-lg cursor-pointer bg-muted flex items-center justify-center overflow-hidden"
               >
                 {currentSwatchValue ? (
-                  <img
+                  <Image
+                    height={100}
+                    width={100}
                     src={currentSwatchValue}
                     className="w-full h-full object-cover"
                     alt="preview"

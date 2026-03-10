@@ -74,17 +74,38 @@ const TableSkeleton = ({ rows = 5, colCount = 5 }) => {
           key={`skeleton-row-${rowIndex}`}
           className="border-b border-border/20"
         >
-          {Array.from({ length: colCount }).map((_, colIndex) => (
+          {/* Checkbox skeleton */}
+          <td className="p-6 text-center">
+            <div className="h-4 w-4 bg-muted animate-pulse rounded mx-auto" />
+          </td>
+
+          {/* Expandable icon skeleton (if needed) */}
+          {colCount > 0 && (
+            <td className="p-6 text-center">
+              <div className="h-4 w-4 bg-muted animate-pulse rounded mx-auto" />
+            </td>
+          )}
+
+          {/* Data columns skeleton */}
+          {Array.from({ length: colCount - 2 }).map((_, colIndex) => (
             <td key={`skeleton-cell-${rowIndex}-${colIndex}`} className="p-6">
               <div
                 className="h-4 bg-muted animate-pulse rounded-lg"
                 style={{
                   width: `${Math.floor(Math.random() * (80 - 40 + 1) + 40)}%`,
-                  margin: colIndex === colCount - 1 ? "0 0 0 auto" : "0",
                 }}
               />
             </td>
           ))}
+
+          {/* Action buttons skeleton - 3 buttons */}
+          <td className="p-6 text-right">
+            <div className="flex gap-3 items-end justify-end">
+              <div className="h-8 w-8 bg-muted animate-pulse rounded-lg" />
+              <div className="h-8 w-8 bg-muted animate-pulse rounded-lg" />
+              <div className="h-8 w-8 bg-muted animate-pulse rounded-lg" />
+            </div>
+          </td>
         </tr>
       ))}
     </>
@@ -106,6 +127,7 @@ export const DataTable = ({
   expandableContent,
   renderViewModal,
   renderEditModal,
+  onFullEdit, // New prop for handling full edit from view modal
   maxHeight = "85vh",
 }) => {
   const [data, setData] = useState([]);
@@ -226,14 +248,21 @@ export const DataTable = ({
     setSelectedRows(next);
   };
 
+  // Handler for full edit from view modal
+  const handleFullEdit = (item) => {
+    setViewingItem(null); // Close view modal
+    setEditingItem(item); // Open edit modal
+    if (onFullEdit) onFullEdit(item);
+  };
+
   // Internal Handlers for View/Edit
   const handleView = (item) => {
-    if (renderViewModal) setViewingItem(item); // ✅ updated
+    if (renderViewModal) setViewingItem(item);
     if (onView) onView(item);
   };
 
   const handleEdit = (item) => {
-    if (renderEditModal) setEditingItem(item); // ✅ updated
+    if (renderEditModal) setEditingItem(item);
     if (onEdit) onEdit(item);
   };
 
@@ -586,7 +615,8 @@ export const DataTable = ({
           </tbody>
         </table>
       </div>
-      {/* VIEW DIALOG */}
+
+      {/* VIEW DIALOG - Now passes handleFullEdit to the view modal */}
       {renderViewModal && (
         <Dialog
           open={!!viewingItem}
@@ -596,7 +626,7 @@ export const DataTable = ({
           animationType="bubble"
         >
           <DialogContent className="max-w-3xl">
-            {viewingItem && renderViewModal(viewingItem)}
+            {viewingItem && renderViewModal(viewingItem, handleFullEdit)}
           </DialogContent>
         </Dialog>
       )}

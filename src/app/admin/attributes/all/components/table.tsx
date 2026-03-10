@@ -1,4 +1,5 @@
 "use client";
+import { getAllAttributes } from "@/actions/attrbiute-management/get-all-attributes";
 import { DataTable } from "@/components/common/data-table";
 import { StatusBadge } from "@/components/common/status-badge";
 import {
@@ -10,9 +11,10 @@ import {
   ToggleLeft,
   Type,
 } from "lucide-react";
+import { useState } from "react";
 import { FILTER_OPTIONS } from "../../constants/filter-options";
+import { AttributeEditModal } from "./attribute-edit-model";
 import QuickAttributeView from "./quick-attribute-view";
-import { getAllAttributes } from "@/actions/attrbiute-management/get-all-attributes";
 
 const ATTRIBUTE_TYPES = {
   TEXT: { label: "Text", icon: Type, color: "text-blue-500" },
@@ -26,16 +28,24 @@ const ATTRIBUTE_TYPES = {
   },
   COLOR: { label: "Color", icon: Palette, color: "text-pink-500" },
 };
+
 export default function Table() {
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [editingItem, setEditingItem] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const fetchData = async (params) => {
     const res = await getAllAttributes(params);
-    console.log("res", res);
-
     return {
       data: res.data,
       total: res.total,
       currentPage: res.pageCount,
     };
+  };
+
+  const handleFullEdit = (item) => {
+    setEditingItem(item);
+    setIsEditModalOpen(true);
   };
 
   const columns = [
@@ -53,7 +63,6 @@ export default function Table() {
         </div>
       ),
     },
-
     {
       header: "Type",
       accessor: "type",
@@ -62,7 +71,6 @@ export default function Table() {
       render: (val) => {
         const config = ATTRIBUTE_TYPES[val] || ATTRIBUTE_TYPES.TEXT;
         const Icon = config.icon;
-
         return (
           <div className="flex items-center gap-2">
             <div className={`p-1.5 rounded-md bg-muted ${config.color}`}>
@@ -73,18 +81,16 @@ export default function Table() {
         );
       },
     },
-
     {
       header: "Values",
       accessor: "values",
       visible: true,
       render: (val) => (
         <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black border border-primary/20">
-          {val.length} Values
+          {val?.length || 0} Values
         </span>
       ),
     },
-
     {
       header: "Configuration",
       accessor: "configuration",
@@ -93,12 +99,10 @@ export default function Table() {
       filterOptions: FILTER_OPTIONS.map((o) =>
         o.key === "isVisible" ? "Hidden" : o.label,
       ),
-
       render: (_, item) => (
         <div className="flex flex-wrap gap-1.5">
           {FILTER_OPTIONS.map((option) => {
             const value = item[option.key];
-            // Hidden case
             if (option.key === "isVisible") {
               if (!value)
                 return (
@@ -106,7 +110,6 @@ export default function Table() {
                 );
               return null;
             }
-
             return (
               value && (
                 <StatusBadge
@@ -121,6 +124,7 @@ export default function Table() {
       ),
     },
   ];
+
   return (
     <div>
       <DataTable
@@ -128,26 +132,20 @@ export default function Table() {
         description="Manage and filter through all defined product attributes."
         columns={columns}
         fetchData={fetchData}
-        // refreshKey={refreshKey}
-        onBulkDelete={(item) => console.log(item)}
+        refreshTrigger={refreshKey}
+        setRefreshTrigger={setRefreshKey}
+        onBulkDelete={(items) => console.log("Bulk delete", items)}
         onEdit={(item) => console.log("Edit", item)}
         onView={(item) => console.log("View", item)}
         onDelete={(item) => console.log("Delete", item)}
-        // ✅ NEW
-        renderViewModal={(item) => (
-          <div>
-            <QuickAttributeView formData={item} />
-          </div>
+        onFullEdit={handleFullEdit}
+        renderViewModal={(item, onFullEdit) => (
+          <QuickAttributeView
+            formData={item}
+            onFullEdit={() => onFullEdit(item)}
+          />
         )}
-        renderEditModal={(item) => (
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold">Edit Attribute</h2>
-            <input
-              defaultValue={item.name}
-              className="border p-2 rounded w-full"
-            />
-          </div>
-        )}
+        renderEditModal={(item) => <AttributeEditModal item={item} />}
         expandableContent={(item) =>
           item.values && item.values.length > 0 ? (
             <div className="space-y-3">
