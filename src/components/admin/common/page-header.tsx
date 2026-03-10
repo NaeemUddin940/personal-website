@@ -39,7 +39,7 @@ export default function PageHeader({
       )}
     >
       <div>
-        <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
+        <h1 className="text-4xl tracking-widest font-black text-primary uppercase">
           {title}
         </h1>
         {description && (

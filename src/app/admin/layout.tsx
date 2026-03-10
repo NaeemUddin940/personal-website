@@ -1,10 +1,11 @@
 "use client";
 import "@/app/globals.css";
+import AdminHeader from "@/components/admin/dashboard/admin-header";
+import Sidebar from "@/components/admin/dashboard/sidebar";
 import { authClient } from "@/utils/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import AdminHeader from "./dashboard/components/admin-header";
-import Sidebar from "./dashboard/components/sidebar";
+
 
 export default function AdminLayout({
   children,

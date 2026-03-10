@@ -1,5 +1,6 @@
 "use client";
 import { Option, Select } from "@/components/ui/select";
+import { initialOrders } from "@/constant/admin/dashboard";
 import {
   ChevronDown,
   ChevronLeft,
@@ -14,7 +15,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { initialOrders } from "../data/initial-orders";
 
 // Status colors and config for easy management
 const STATUS_CONFIG = {

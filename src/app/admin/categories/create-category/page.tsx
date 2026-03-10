@@ -1,7 +1,7 @@
 "use client";
 import { Eye, EyeOff, Plus } from "lucide-react";
 import { useState } from "react";
-import PageHeader from "../../components/page-header";
+import PageHeader from "../../../../components/admin/common/page-header";
 import CategoryMainSection from "./category-main-section";
 
 export default function CreateCategoryPage() {

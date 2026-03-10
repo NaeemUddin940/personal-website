@@ -8,11 +8,11 @@ import {
   DropdownTrigger,
 } from "@/components/ui/dropdown";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { menuData } from "@/constant/admin/dashboard";
 import { authClient } from "@/utils/auth-client";
 import { Menu, Search, Settings, User } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { menuData } from "../data/sidebar-menu-data";
 import Sidebar from "./sidebar";
 
 export default function AdminHeader() {

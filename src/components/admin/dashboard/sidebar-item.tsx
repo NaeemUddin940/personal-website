@@ -39,7 +39,7 @@ export const SidebarItem: React.FC<SidebarItemProps> = React.memo(
         className={`flex items-center p-2 rounded-lg cursor-pointer transition-all relative group ${
           isActive
             ? "bg-primary text-primary-foreground shadow-sm"
-            : "text-sidebar-foreground hover:bg-sidebar-primary hover:text-primary-foreground"
+            : "text-sidebar-foreground hover:bg-primary hover:text-primary-foreground"
         }`}
         style={{
           paddingLeft: depth > 0 ? `${depth * 12 + 8}px` : "8px",

@@ -1,12 +1,12 @@
 "use client";
-import FinancialStats from "./components/financial-stats";
-import NewUsers from "./components/new-users";
-import RecentOrders from "./components/recent-orders";
-import RevenueAndLossAnalyticsChart from "./components/revenue-and-loss-analytics-chart";
-import { StatsCardPremium } from "./components/stats-card";
-import StockReport from "./components/stock-inventory-report";
-import TopProducts from "./components/top-products";
-import { statsData } from "./data/stats-data";
+import FinancialStats from "@/components/admin/dashboard/financial-stats";
+import NewUsers from "@/components/admin/dashboard/new-users";
+import RecentOrders from "@/components/admin/dashboard/recent-orders";
+import RevenueAndLossAnalyticsChart from "@/components/admin/dashboard/revenue-and-loss-analytics-chart";
+import { StatsCardPremium } from "@/components/admin/dashboard/stats-card";
+import StockReport from "@/components/admin/dashboard/stock-inventory-report";
+import TopProducts from "@/components/admin/dashboard/top-products";
+import { statsData } from "@/constant/admin/dashboard";
 
 export default function DashboardPage() {
   return (

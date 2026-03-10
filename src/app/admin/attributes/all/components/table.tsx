@@ -1,5 +1,4 @@
 "use client";
-import { getAllAttributes } from "@/actions/attribute-management/get-all-attributes";
 import { DataTable } from "@/components/common/data-table";
 import { StatusBadge } from "@/components/common/status-badge";
 import {
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { FILTER_OPTIONS } from "../../constants/filter-options";
 import QuickAttributeView from "./quick-attribute-view";
+import { getAllAttributes } from "@/actions/attrbiute-management/get-all-attributes";
 
 const ATTRIBUTE_TYPES = {
   TEXT: { label: "Text", icon: Type, color: "text-blue-500" },

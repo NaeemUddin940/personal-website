@@ -1,13 +1,13 @@
 "use client";
-import { DatePicker } from "@/components/common/date-picker";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-import {
+import React, {
   ChangeEvent,
   forwardRef,
   InputHTMLAttributes,
   ReactNode,
   TextareaHTMLAttributes,
+  useEffect,
   useId,
   useState,
 } from "react";
@@ -18,25 +18,34 @@ import {
   UseFormRegisterReturn,
 } from "react-hook-form";
 
-// Icon Type - supports both component and ReactNode
+/**
+ * Mock DatePicker for standalone compatibility.
+ * Replace this import with your actual component: import { DatePicker } from "@/components/common/date-picker";
+ */
+const DatePicker = ({ selectedDate, setSelectedDate }: any) => (
+  <input
+    type="date"
+    className="w-full rounded-lg border p-2"
+    value={selectedDate ? selectedDate.toISOString().split("T")[0] : ""}
+    onChange={(e) =>
+      setSelectedDate(e.target.value ? new Date(e.target.value) : null)
+    }
+  />
+);
+
 type IconType =
   | React.ComponentType<{ className?: string; strokeWidth?: number }>
   | React.ReactNode;
 
-// Forgot Password Configuration
 interface ForgotPasswordConfig {
   label?: string;
   href?: string;
   onClick?: () => void;
 }
 
-// Size variants for the input
 type InputSize = "sm" | "md" | "lg";
-
-// Variant styles
 type InputVariant = "default" | "filled" | "outline" | "ghost";
 
-// Base props shared between input and textarea
 interface BaseInputFieldProps {
   name: string;
   label?: string;
@@ -60,25 +69,18 @@ interface BaseInputFieldProps {
   forgotPassword?: ForgotPasswordConfig;
   disabled?: boolean;
   readOnly?: boolean;
-  // For direct value control (React state)
   value?: string | number;
   onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  // For react-hook-form register
   register?: UseFormRegisterReturn<string>;
-  // Success state
   success?: boolean;
   successMessage?: string;
-  // Character count
   showCharCount?: boolean;
   maxLength?: number;
-  // Loading state
   loading?: boolean;
-  // Prefix/Suffix
   prefix?: ReactNode;
   suffix?: ReactNode;
 }
 
-// Input specific props
 interface InputFieldInputProps extends BaseInputFieldProps {
   type?:
     | "text"
@@ -97,7 +99,6 @@ interface InputFieldInputProps extends BaseInputFieldProps {
   >;
 }
 
-// Textarea specific props
 interface InputFieldTextareaProps extends BaseInputFieldProps {
   type: "textarea";
   rows?: number;
@@ -109,23 +110,21 @@ interface InputFieldTextareaProps extends BaseInputFieldProps {
 
 export type InputFieldProps = InputFieldInputProps | InputFieldTextareaProps;
 
-// Size classes mapping
 const sizeClasses: Record<InputSize, string> = {
   sm: "px-3 py-1.5 text-sm",
   md: "px-4 py-2.5 text-md",
   lg: "px-5 py-3.5 text-lg",
 };
 
-// Variant classes mapping
 const variantClasses: Record<InputVariant, string> = {
   default: "bg-input border-border focus:border-primary",
-  filled: "bg-muted border-transparent focus:bg-input focus:border-primary",
-  outline: "bg-transparent border-border focus:border-primary",
+  filled:
+    "bg-muted border-transparent focus:bg-background focus:border-primary",
+  outline: "bg-transparent border-input focus:border-primary",
   ghost:
-    "bg-transparent border-transparent focus:bg-input focus:border-primary",
+    "bg-transparent border-transparent focus:bg-background focus:border-primary",
 };
 
-// Icon size based on input size
 const iconSizeClasses: Record<InputSize, string> = {
   sm: "h-4 w-4",
   md: "h-5 w-5",
@@ -170,18 +169,23 @@ export const InputField = forwardRef<
   const inputId = props.id || generatedId;
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [charCount, setCharCount] = useState<number>(
-    typeof value === "string" ? value.length : 0,
-  );
+  const [charCount, setCharCount] = useState<number>(0);
+
+  // Sync internal char count with initial value
+  useEffect(() => {
+    if (value !== undefined) {
+      setCharCount(String(value).length);
+    }
+  }, [value]);
 
   const isPassword = props.type === "password";
   const isTextarea = props.type === "textarea";
   const isDate = props.type === "date";
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(
     value ? new Date(value as string) : null,
   );
 
-  // Extract error message from various error types
   const getErrorMessage = (): string | undefined => {
     if (!error) return undefined;
     if (typeof error === "string") return error;
@@ -194,66 +198,45 @@ export const InputField = forwardRef<
 
   const errorMessage = getErrorMessage();
 
-  // Base input classes
   const baseClasses = cn(
-    "w-full rounded-lg transition-all duration-300 outline-none border",
-    "text-foreground",
-    "placeholder:text-muted-foreground",
-    "focus:ring-2 focus:ring-primary/30",
-    "disabled:opacity-60 disabled:cursor-not-allowed",
-    "read-only:bg-muted read-only:cursor-default",
+    " w-full px-4 py-2.5 rounded-lg transition-all duration-300 outline-none border bg-input text-secondary-foreground border-border placeholder:text-muted-foreground focus:scale-102 focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed",
     sizeClasses[size],
     variantClasses[variant],
   );
 
-  // Icon padding classes
   const getIconPadding = () => {
     const paddingMap = {
       sm: { left: "pl-9", right: "pr-9" },
       md: { left: "pl-10", right: "pr-10" },
       lg: { left: "pl-12", right: "pr-12" },
     };
-
     let padding = "";
-    if (Icon && iconPosition === "left") {
+    if ((Icon && iconPosition === "left") || prefix)
       padding += paddingMap[size].left + " ";
-    }
-    if ((Icon && iconPosition === "right") || isPassword || suffix || loading) {
+    if ((Icon && iconPosition === "right") || isPassword || suffix || loading)
       padding += paddingMap[size].right;
-    }
-    if (prefix) {
-      padding += " " + paddingMap[size].left;
-    }
     return padding;
   };
 
-  // State classes (error/success)
   const stateClasses = cn(
     errorMessage &&
       "border-destructive focus:ring-destructive/20 focus:border-destructive",
     success &&
       !errorMessage &&
-      "border-success focus:ring-success/20 focus:border-success",
+      "border-green-500 focus:ring-green-500/20 focus:border-green-500",
   );
 
-  // Handle change for character count
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    if (showCharCount) {
-      setCharCount(e.target.value.length);
-    }
+    if (showCharCount) setCharCount(e.target.value.length);
     onChange?.(e);
-    register?.onChange?.(e);
+    if (register) register.onChange(e);
   };
 
-  // Render icon
   const renderIcon = (pos: "left" | "right") => {
     if (!Icon || iconPosition !== pos) return null;
-
     const positionClasses = pos === "left" ? "left-3" : "right-3";
-
-    // ১. চেক করুন এটা কি কোনো valid React Component (Function অথবা forwardRef Object)
     const isComponent =
       typeof Icon === "function" ||
       (typeof Icon === "object" && Icon !== null && "render" in (Icon as any));
@@ -261,7 +244,7 @@ export const InputField = forwardRef<
     return (
       <div
         className={cn(
-          "absolute top-1/2 z-50 -translate-y-1/2 flex items-center justify-center pointer-events-none transition-colors group-focus-within:text-primary",
+          "absolute top-1/2 z-10 -translate-y-1/2 flex items-center justify-center pointer-events-none transition-colors group-focus-within:text-primary",
           positionClasses,
         )}
       >
@@ -281,38 +264,26 @@ export const InputField = forwardRef<
     );
   };
 
-  // Render forgot password link/button
   const renderForgotPassword = () => {
     if (!forgotPassword || props.type !== "password") return null;
-
     const {
       label: fpLabel = "Forgot Password?",
       href,
       onClick,
     } = forgotPassword;
     const commonClasses =
-      "text-sm italic font-medium text-primary hover:underline cursor-pointer transition-colors";
-
-    if (href) {
-      return (
-        <a href={href} className={commonClasses}>
-          {fpLabel}
-        </a>
-      );
-    }
-
-    if (onClick) {
-      return (
-        <button type="button" onClick={onClick} className={commonClasses}>
-          {fpLabel}
-        </button>
-      );
-    }
-
-    return null;
+      "text-xs italic font-medium text-primary hover:underline cursor-pointer transition-colors";
+    return href ? (
+      <a href={href} className={commonClasses}>
+        {fpLabel}
+      </a>
+    ) : (
+      <button type="button" onClick={onClick} className={commonClasses}>
+        {fpLabel}
+      </button>
+    );
   };
 
-  // Loading spinner
   const renderLoading = () => {
     if (!loading) return null;
     return (
@@ -341,85 +312,25 @@ export const InputField = forwardRef<
     );
   };
 
-  // Combined props for register and controlled input
-  // Combined props for register and controlled input
-  const getInputProps = () => {
-    const baseProps = {
-      id: inputId,
-      name,
-      placeholder,
-      disabled: disabled || loading,
-      readOnly,
-      maxLength,
-      "aria-invalid": !!errorMessage,
-      "aria-describedby": errorMessage
-        ? `${inputId}-error`
-        : helpText
-          ? `${inputId}-help`
-          : undefined,
-    };
-
-    // React Hook Form - এই অংশটি ঠিক করুন
-    if (register) {
-      return {
-        ...baseProps,
-        ...register, // register এর সমস্ত প্রপস (onChange, onBlur, ref, name) রাখুন
-        onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-          // প্রথমে register এর onChange কল করুন (এটাই আসলে react-hook-form এ ভ্যালু আপডেট করে)
-          register.onChange?.(e);
-
-          // character count আপডেট করুন
-          if (showCharCount) {
-            setCharCount(e.target.value.length);
-          }
-
-          // আপনার কাস্টম onChange কল করুন (যদি থাকে)
-          onChange?.(e);
-        },
-      };
-    }
-
-    // Controlled component
-    if (value !== undefined) {
-      return {
-        ...baseProps,
-        value,
-        onChange: handleChange,
-      };
-    }
-
-    // Uncontrolled
-    return {
-      ...baseProps,
-      onChange: handleChange,
-    };
-  };
-
-  // Render prefix
-  const renderPrefix = () => {
-    if (!prefix) return null;
-    return (
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-muted-foreground">
-        {prefix}
-      </div>
-    );
-  };
-
-  // Render suffix
-  const renderSuffix = () => {
-    if (!suffix) return null;
-    return (
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-muted-foreground">
-        {suffix}
-      </div>
-    );
+  // Logic to merge refs and handle register vs custom props
+  const inputPropsMerged = {
+    id: inputId,
+    name: register?.name || name,
+    placeholder,
+    disabled: disabled || loading,
+    readOnly,
+    maxLength,
+    autoComplete: isPassword ? "current-password" : "off",
+    ...(register ? register : {}),
+    onChange: handleChange,
+    ...(value !== undefined ? { value } : {}),
+    "aria-invalid": !!errorMessage,
   };
 
   return (
     <div
       className={cn("flex flex-col gap-1.5 group w-full", containerClassName)}
     >
-      {/* Label Row */}
       {(label || forgotPassword) && (
         <div className="flex items-center justify-between">
           {label && (
@@ -430,7 +341,7 @@ export const InputField = forwardRef<
                 labelClassName,
               )}
             >
-              {label}
+              {label}{" "}
               {required && <span className="text-destructive ml-1">*</span>}
             </label>
           )}
@@ -438,43 +349,45 @@ export const InputField = forwardRef<
         </div>
       )}
 
-      {/* Input Container */}
-      <div className="relative group focus-within:scale-102 transition-all duration-300">
-        {renderPrefix()}
+      <div className="relative group transition-all duration-300">
+        {prefix && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-muted-foreground">
+            {prefix}
+          </div>
+        )}
         {renderIcon("left")}
+
         {isDate ? (
           <DatePicker
             selectedDate={selectedDate}
-            setSelectedDate={(date) => {
+            setSelectedDate={(date: Date | null) => {
               setSelectedDate(date);
-
-              const syntheticEvent = {
-                target: {
-                  name,
-                  value: date
-                    ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000,
-                      )
-                        .toISOString()
-                        .split("T")[0]
-                    : "",
-                },
+              const val = date ? date.toISOString().split("T")[0] : "";
+              const event = {
+                target: { name: register?.name || name, value: val },
               } as ChangeEvent<HTMLInputElement>;
-
-              handleChange(syntheticEvent);
+              handleChange(event);
             }}
           />
         ) : isTextarea ? (
           <textarea
-            ref={ref as React.Ref<HTMLTextAreaElement>}
+            ref={(node: HTMLTextAreaElement) => {
+              if (register) register.ref(node);
+              if (typeof ref === "function") ref(node);
+              else if (ref) (ref as any).current = node;
+            }}
             rows={(props as InputFieldTextareaProps).rows || 4}
             className={cn(baseClasses, stateClasses, "resize-none", className)}
-            {...getInputProps()}
+            {...(inputPropsMerged as any)}
             {...(props as InputFieldTextareaProps).textareaProps}
           />
         ) : (
           <input
-            ref={ref as React.Ref<HTMLInputElement>}
+            ref={(node: HTMLInputElement) => {
+              if (register) register.ref(node);
+              if (typeof ref === "function") ref(node);
+              else if (ref) (ref as any).current = node;
+            }}
             type={
               isPassword
                 ? showPassword
@@ -482,19 +395,17 @@ export const InputField = forwardRef<
                   : "password"
                 : props.type || "text"
             }
-            min={props.type === "number" ? 0 : undefined}
             className={cn(
               baseClasses,
               getIconPadding(),
               stateClasses,
               className,
             )}
-            {...getInputProps()}
+            {...(inputPropsMerged as any)}
             {...(props as InputFieldInputProps).inputProps}
           />
         )}
 
-        {/* Password toggle */}
         {isPassword && !loading && (
           <button
             type="button"
@@ -506,47 +417,36 @@ export const InputField = forwardRef<
           </button>
         )}
 
-        {/* Right icon (only if not password) */}
         {!isPassword && !loading && !suffix && renderIcon("right")}
-
-        {/* Loading spinner */}
         {renderLoading()}
-
-        {/* Suffix */}
-        {!isPassword && !loading && renderSuffix()}
+        {suffix && !loading && !isPassword && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            {suffix}
+          </div>
+        )}
       </div>
 
-      {/* Bottom row: error, success, help text, character count */}
-      <div className="flex items-center justify-between min-h-4.5">
+      <div className="flex items-center justify-between min-h-[1.25rem]">
         <div className="flex-1">
           {errorMessage ? (
-            <span
-              id={`${inputId}-error`}
-              role="alert"
-              className="text-xs font-medium text-destructive animate-in"
-            >
+            <span className="text-xs font-medium text-destructive animate-in fade-in slide-in-from-top-1">
               {errorMessage}
             </span>
           ) : success && successMessage ? (
-            <span className="text-xs font-medium text-success animate-in">
+            <span className="text-xs font-medium text-green-600 animate-in fade-in">
               ✓ {successMessage}
             </span>
           ) : helpText ? (
-            <span
-              id={`${inputId}-help`}
-              className="text-xs text-muted-foreground"
-            >
-              💡 {helpText}
-            </span>
+            <span className="text-xs text-muted-foreground">💡 {helpText}</span>
           ) : null}
         </div>
 
         {showCharCount && maxLength && (
           <span
             className={cn(
-              "text-xs",
+              "text-xs transition-colors",
               charCount > maxLength
-                ? "text-destructive"
+                ? "text-destructive font-bold"
                 : "text-muted-foreground",
             )}
           >

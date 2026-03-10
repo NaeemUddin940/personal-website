@@ -1,11 +1,4 @@
-import {
-  AlertCircle,
-  Eye,
-  Filter,
-  Fingerprint,
-  Layers,
-  Search,
-} from "lucide-react";
+import { Eye, Filter, Fingerprint, Globe, Layers, Search } from "lucide-react";
 
 export const ATTRIBUTE_GROUPS = [
   { value: "BASIC", label: "Basic" },
@@ -52,9 +45,9 @@ export const TOGGLE_FLAG = [
   { id: "isVariation", label: "Use for Variations", icon: Layers },
   { id: "isFilterable", label: "Enable in Sidebar Filters", icon: Filter },
   { id: "isSearchable", label: "Allow Value Search", icon: Search },
-  { id: "isRequired", label: "Mandatory Selection", icon: AlertCircle },
   { id: "isVisible", label: "Publicly Visible", icon: Eye },
   { id: "isUnique", label: "Unique Value", icon: Fingerprint },
+  { id: "isGlobal", label: "Global or Category", icon: Globe },
 ];
 
 export const STATUS_OPTIONS = [

@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { HiOutlineDocument, HiOutlineFolder } from "react-icons/hi";
-import { TabNavigation } from "../../components/tab-navigation";
+import { TabNavigation } from "../../../../components/admin/common/tab-navigation";
 import AttributeManagement from "../components/create-and-edit-file/attribute-management";
 import BasicInfo from "../components/create-and-edit-file/basic-info";
 import SeoSettings from "../components/create-and-edit-file/seo-settings";
@@ -156,7 +156,7 @@ const methods = useForm<CategoryFullInput>({
             <Tabs
               variant="underline"
               value={activeTab}
-              onValueChange={handleTabChange} // 👈 কাস্টম হ্যান্ডলার ব্যবহার
+              onValueChange={handleTabChange} 
             >
               <TabsList className="mb-6">
                 {tabsTrigger.map((tab) => (
@@ -195,7 +195,7 @@ const methods = useForm<CategoryFullInput>({
             <TabNavigation
               tabs={tabsTrigger}
               activeTab={activeTab}
-              onTabChange={setActiveTab} // 👈 সরাসরি setActiveTab
+              onTabChange={setActiveTab}
             />
           </CardFooter>
         </Card>

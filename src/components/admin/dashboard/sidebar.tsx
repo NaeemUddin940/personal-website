@@ -1,12 +1,12 @@
 "use client";
 import { SidebarProps } from "@/@types/admin/sidebar";
 import { DrawerClose } from "@/components/ui/drawer";
+import { menuData } from "@/constant/admin/dashboard";
 import { authClient } from "@/utils/auth-client";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, MinusSquare } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { menuData } from "../data/sidebar-menu-data";
 import { SidebarItem } from "./sidebar-item";
 
 export default function Sidebar({

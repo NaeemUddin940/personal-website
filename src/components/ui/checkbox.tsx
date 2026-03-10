@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 
 export const Checkbox = ({
   checked: controlledChecked,
-  onChange,
+  onCheckedChange,
   name,
   label,
   activeColor = "#624dfe",
@@ -21,8 +21,8 @@ export const Checkbox = ({
     if (controlledChecked === undefined) {
       setInternalChecked(e.target.checked);
     }
-    if (onChange) {
-      onChange(e);
+    if (onCheckedChange) {
+      onCheckedChange(e);
     }
   };
 

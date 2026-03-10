@@ -13,6 +13,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 
 /* ======================= TYPES ======================= */
 
@@ -91,6 +92,7 @@ export function Select({
     multiple ? [] : "",
   );
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -98,6 +100,12 @@ export function Select({
   const currentValue = isControlled ? controlledValue : internalValue;
 
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+
+  // Handle mounting for portal
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   const updatePosition = useCallback(() => {
     if (triggerRef.current && isOpen) {
@@ -111,22 +119,54 @@ export function Select({
 
       const [side, align] = position.split("-") as [string, string];
 
-      if (side === "top") top = rect.top - dHeight - offset;
-      else if (side === "bottom") top = rect.bottom + offset;
-      else if (side === "left" || side === "right") {
+      // Calculate position based on viewport
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      if (side === "top") {
+        top = rect.top - dHeight - offset;
+        // Check if dropdown would go above viewport
+        if (top < 0) {
+          top = rect.bottom + offset;
+        }
+      } else if (side === "bottom") {
+        top = rect.bottom + offset;
+        // Check if dropdown would go below viewport
+        if (top + dHeight > viewportHeight) {
+          top = rect.top - dHeight - offset;
+        }
+      } else if (side === "left" || side === "right") {
         if (align === "top") top = rect.top;
         else if (align === "center")
           top = rect.top + rect.height / 2 - dHeight / 2;
         else if (align === "bottom") top = rect.bottom - dHeight;
+
+        // Ensure dropdown stays within viewport vertically
+        if (top < 0) top = 0;
+        if (top + dHeight > viewportHeight) top = viewportHeight - dHeight;
       }
 
-      if (side === "left") left = rect.left - dWidth - offset;
-      else if (side === "right") left = rect.right + offset;
-      else if (side === "top" || side === "bottom") {
+      if (side === "left") {
+        left = rect.left - dWidth - offset;
+        // Check if dropdown would go left of viewport
+        if (left < 0) {
+          left = rect.right + offset;
+        }
+      } else if (side === "right") {
+        left = rect.right + offset;
+        // Check if dropdown would go right of viewport
+        if (left + dWidth > viewportWidth) {
+          left = rect.left - dWidth - offset;
+        }
+      } else if (side === "top" || side === "bottom") {
         if (align === "left") left = rect.left;
         else if (align === "center")
           left = rect.left + rect.width / 2 - dWidth / 2;
         else if (align === "right") left = rect.right - dWidth;
+
+        // Ensure dropdown stays within viewport horizontally
+        if (left < 0) left = 0;
+        if (left + dWidth > viewportWidth) left = viewportWidth - dWidth;
       }
 
       setCoords({ top, left, width: rect.width });
@@ -136,12 +176,17 @@ export function Select({
   useEffect(() => {
     if (isOpen) {
       updatePosition();
+      // Use requestAnimationFrame to ensure DOM is ready
+      const rafId = requestAnimationFrame(updatePosition);
+
       window.addEventListener("scroll", updatePosition, {
         capture: true,
         passive: true,
       });
       window.addEventListener("resize", updatePosition);
+
       return () => {
+        cancelAnimationFrame(rafId);
         window.removeEventListener("scroll", updatePosition, { capture: true });
         window.removeEventListener("resize", updatePosition);
       };
@@ -159,8 +204,23 @@ export function Select({
         setIsOpen(false);
       }
     };
-    if (isOpen) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handler);
+      document.addEventListener("keydown", handleEscape);
+      // Removed body scroll locking to prevent scrollbar from hiding/showing
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, [isOpen]);
 
   const onSelect = useCallback(
@@ -311,37 +371,40 @@ export function Select({
           )}
         </button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              ref={dropdownRef}
-              initial={{
-                opacity: 0,
-                scale: 0.95,
-                y: position.includes("bottom") ? -4 : 4,
-              }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{
-                opacity: 0,
-                scale: 0.95,
-                y: position.includes("bottom") ? -4 : 4,
-              }}
-              transition={{ duration: 0.1, ease: "linear" }}
-              style={{
-                position: "fixed",
-                top: coords.top,
-                left: coords.left,
-                minWidth: iconOnly ? 180 : Math.max(coords.width, 160),
-                zIndex: 9999,
-              }}
-              className="rounded-2xl p-1.5 bg-popover text-popover-foreground border border-border shadow-2xl outline-none"
-            >
-              <ul className="max-h-60 overflow-y-auto list-none p-0 m-0 custom-scrollbar">
-                {children}
-              </ul>
-            </motion.div>
+        {/* Portal dropdown */}
+        {mounted &&
+          createPortal(
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  ref={dropdownRef}
+                  initial={{
+                    opacity: 0,
+                    scale: 0.95,
+                  }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.95,
+                  }}
+                  transition={{ duration: 0.1, ease: "easeInOut" }}
+                  style={{
+                    position: "fixed",
+                    top: coords.top,
+                    left: coords.left,
+                    minWidth: iconOnly ? 180 : Math.max(coords.width, 160),
+                    zIndex: 999999,
+                  }}
+                  className="rounded-2xl p-1.5 bg-popover text-popover-foreground border border-border shadow-2xl outline-none"
+                >
+                  <ul className="max-h-60 overflow-y-auto list-none p-0 m-0 custom-scrollbar">
+                    {children}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>,
+            document.body,
           )}
-        </AnimatePresence>
 
         {!iconOnly && (
           <div className="ml-1">
@@ -350,7 +413,7 @@ export function Select({
                 role="alert"
                 className="text-[12px] font-medium text-destructive flex items-center gap-1"
               >
-                {error.message}
+                {error}
               </span>
             ) : helpText ? (
               <span className="text-[12px] text-muted-foreground">
@@ -381,7 +444,7 @@ export function Option({ value: itemValue, children, icon }: OptionProps) {
         onSelect(itemValue);
       }}
       className={cn(
-        "flex items-center justify-between gap-3 px-4 py-2.5 text-sm rounded-xl cursor-pointer transition-all mb-0.5  z-9999 last:mb-0 group outline-none",
+        "flex items-center justify-between gap-3 px-4 py-2.5 text-sm rounded-xl cursor-pointer transition-all mb-0.5 last:mb-0 group outline-none",
         isSelected
           ? "bg-primary text-primary-foreground font-bold"
           : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
